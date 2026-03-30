@@ -207,8 +207,18 @@ Input is configured via `Assets/InputSystem_Actions.inputactions` using the new 
 - 테스트는 `Assets/Tests/EditMode/` 또는 `Assets/Tests/PlayMode/` 에 위치
 - 실행: **Window > General > Test Runner** in the Unity Editor
 
+## Future Considerations
+
+게임 설계가 구체화되면 논의할 항목들:
+
+- [ ] **피처별 asmdef 분리** — 현재 `FoldingFate.Features` 단일 어셈블리로는 피처 간 직접 참조를 컴파일 타임에 차단할 수 없음. 피처가 5개 이상으로 늘어나면 `FoldingFate.Features.Combat`, `FoldingFate.Features.Inventory` 등으로 분리 검토
+- [ ] **게임 상태(State) 관리 패턴** — Menu → Loading → Gameplay → Pause → GameOver 등 앱 레벨 상태 전환 전략. VContainer `LifetimeScope` 계층과 연동하는 State Machine 또는 씬 기반 상태 관리
+- [ ] **씬 전략** — 단일 씬 vs 멀티 씬(Additive Loading) 결정, Addressables 도입 여부
+- [ ] **로깅/디버그 전략** — `Debug.Log` 래핑, 조건부 로깅, 릴리즈 빌드 시 로그 스트리핑
+
 ## Code Conventions
 
+- **C# 표준 코딩 컨벤션**을 따른다 ([Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions))
 - All game scripts are C# placed under `Assets/`
 - Scripts are organized in subdirectories by feature/system
 - `Assets/TutorialInfo/` contains editor-only utility scripts (not game logic)
