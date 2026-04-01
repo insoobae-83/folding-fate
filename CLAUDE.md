@@ -45,6 +45,7 @@ Defined in `Packages/manifest.json`:
 - **기본 패턴**: CBD (Component-Based Design)
 - **폴더 구조**: Feature-based — 기능 단위로 관련 코드(Model, System, Component, UI)를 한 곳에 모음
 - **데이터/로직 분리**: 불변 설정 데이터는 ScriptableObject, 런타임 게임 상태와 비즈니스 로직은 순수 C#
+- **순수 C# 모델**: Rich Domain Model — 모델이 자신의 불변식(invariant)을 지키는 로직을 소유하고, 여러 모델 간 조율이나 외부 의존이 필요한 로직만 System에 둔다
 - **이벤트/반응형**: R3 (Reactive Extensions) 통일 — SO 이벤트 채널(Ryan Hipple) 사용하지 않음
 - **게임플레이 월드**: CBD 기반 MonoBehaviour — MonoBehaviour는 View 또는 Controller 역할을 할 수 있으며, 역할이 명확하면 분리한다. Unity 엔진 기능(Collider 반응, Animator 구동 등)과 강결합되어 분리가 오히려 복잡성을 높이는 경우에만 하나의 MonoBehaviour가 두 역할을 겸한다. 비즈니스 로직과 게임 상태는 순수 C# 레이어에 위임
 - **UI**: MVVM 패턴 철저히 적용 + Unity UI Toolkit (UXML/USS). ViewModel(순수 C#)과 View(UIDocument)를 명확히 분리
@@ -100,8 +101,8 @@ Assets/Tests/
 |---|---|---|
 | Core | 순수 C# | 인터페이스, 확장 메서드, 상수 — 다른 레이어에 의존하지 않음 |
 | Infrastructure | 순수 C# + MonoBehaviour | 크로스커팅 서비스 (Audio, Scene, Pool, Save, EventBus) |
-| Features/*/Models | 순수 C# | 피처별 게임 상태, 도메인 모델 |
-| Features/*/Systems | 순수 C# | 피처별 게임 로직 (VContainer `ITickable`/`IStartable`로 생명주기 구동) |
+| Features/*/Models | 순수 C# (Rich Domain Model) | 피처별 게임 상태, 도메인 모델 — 자신의 불변식을 지키는 로직 소유 |
+| Features/*/Systems | 순수 C# | 여러 모델 간 조율, 외부 의존이 필요한 로직 (VContainer `ITickable`/`IStartable`로 생명주기 구동) |
 | Features/*/Data | ScriptableObject | 피처별 디자이너 설정값, 불변 데이터 |
 | Features/*/UI | ViewModel + View | 피처별 MVVM UI (ViewModel은 순수 C#, View는 UIDocument 컨트롤러) |
 | Features/*/Components | MonoBehaviour | Unity 엔진 연동 — View 또는 Controller 역할 (역할이 명확하면 분리, 강결합 시 통합) |
@@ -112,7 +113,11 @@ Assets/Tests/
 >
 > **UI**: ViewModel(순수 C#)과 View(UIDocument 컨트롤러)를 철저히 분리하는 MVVM을 적용한다.
 >
-> **Systems 생명주기**: `Gameplay/Systems`의 순수 C# 클래스는 VContainer의 `ITickable`(매 프레임), `IStartable`(초기화), `IAsyncStartable`(비동기 초기화)을 구현하여 MonoBehaviour 없이 생명주기를 갖는다.
+> **Model/System 로직 분배 기준**:
+> - **Model 내부**: 자기 데이터의 불변식, 단일 모델 범위의 로직 (예: `TakeDamage`, `Heal`, `AddBuff`)
+> - **System**: 여러 모델 간 조율, 외부 의존성이 필요한 로직 (예: 데미지 계산(공격자+방어자+설정), 턴 진행)
+>
+> **Systems 생명주기**: `Features/*/Systems`의 순수 C# 클래스는 VContainer의 `ITickable`(매 프레임), `IStartable`(초기화), `IAsyncStartable`(비동기 초기화)을 구현하여 MonoBehaviour 없이 생명주기를 갖는다.
 
 ### Assembly Definition 전략
 
