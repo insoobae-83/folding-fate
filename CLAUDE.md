@@ -46,7 +46,7 @@ Defined in `Packages/manifest.json`:
 - **폴더 구조**: Feature-based — 기능 단위로 관련 코드(Model, System, Component, UI)를 한 곳에 모음
 - **데이터/로직 분리**: 불변 설정 데이터는 ScriptableObject, 런타임 게임 상태와 비즈니스 로직은 순수 C#
 - **이벤트/반응형**: R3 (Reactive Extensions) 통일 — SO 이벤트 채널(Ryan Hipple) 사용하지 않음
-- **게임플레이 월드**: CBD 기반 MonoBehaviour — Unity 엔진 기능(Transform, Rigidbody, Animator 등) 및 라이프사이클과 강하게 결합되므로 View/Controller를 하나의 컴포넌트가 커버. 비즈니스 로직과 게임 상태는 순수 C# 레이어에 위임
+- **게임플레이 월드**: CBD 기반 MonoBehaviour — MonoBehaviour는 View 또는 Controller 역할을 할 수 있으며, 역할이 명확하면 분리한다. Unity 엔진 기능(Collider 반응, Animator 구동 등)과 강결합되어 분리가 오히려 복잡성을 높이는 경우에만 하나의 MonoBehaviour가 두 역할을 겸한다. 비즈니스 로직과 게임 상태는 순수 C# 레이어에 위임
 - **UI**: MVVM 패턴 철저히 적용 + Unity UI Toolkit (UXML/USS). ViewModel(순수 C#)과 View(UIDocument)를 명확히 분리
 - **의존성 주입**: VContainer (`jp.hadashikick.vcontainer`)
 
@@ -104,11 +104,11 @@ Assets/Tests/
 | Features/*/Systems | 순수 C# | 피처별 게임 로직 (VContainer `ITickable`/`IStartable`로 생명주기 구동) |
 | Features/*/Data | ScriptableObject | 피처별 디자이너 설정값, 불변 데이터 |
 | Features/*/UI | ViewModel + View | 피처별 MVVM UI (ViewModel은 순수 C#, View는 UIDocument 컨트롤러) |
-| Features/*/Components | MonoBehaviour | Unity 엔진 연동 + View/Controller 통합 (라이프사이클, 입력, 시각화, 조율) |
+| Features/*/Components | MonoBehaviour | Unity 엔진 연동 — View 또는 Controller 역할 (역할이 명확하면 분리, 강결합 시 통합) |
 | Shared | 혼합 | 여러 피처가 공유하는 데이터, UI 컴포넌트 |
 | Installers | VContainer LifetimeScope | 루트/씬 단위 DI 바인딩 등록 |
 
-> **게임플레이 월드**: MonoBehaviour는 CBD의 컴포넌트 단위로, Unity 엔진 기능(Transform, Rigidbody, Animator, Collider 등)과 강결합되어 있어 View와 Controller를 억지로 분리하지 않는다. 단, 비즈니스 로직과 게임 상태는 반드시 순수 C# 레이어(Models/Systems)에 둘 것.
+> **게임플레이 월드**: MonoBehaviour는 View 또는 Controller 역할을 할 수 있으며, 역할이 명확하면 분리한다. Unity 엔진 기능(Collider 반응, Animator 구동 등)과 강결합되어 분리가 오히려 복잡성을 높이는 경우에만 하나의 MonoBehaviour가 두 역할을 겸한다. 비즈니스 로직과 게임 상태는 반드시 순수 C# 레이어(Models/Systems)에 둘 것.
 >
 > **UI**: ViewModel(순수 C#)과 View(UIDocument 컨트롤러)를 철저히 분리하는 MVVM을 적용한다.
 >
@@ -211,7 +211,7 @@ Input is configured via `Assets/InputSystem_Actions.inputactions` using the new 
 
 게임 설계가 구체화되면 논의할 항목들:
 
-- [ ] **피처별 asmdef 분리** — 현재 `FoldingFate.Features` 단일 어셈블리로는 피처 간 직접 참조를 컴파일 타임에 차단할 수 없음. 피처가 5개 이상으로 늘어나면 `FoldingFate.Features.Combat`, `FoldingFate.Features.Inventory` 등으로 분리 검토
+- [ ] **피처별 asmdef 분리** — 현재 `FoldingFate.Features` 단일 어셈블리로는 피처 간 직접 참조를 컴파일 타임에 차단할 수 없음. 피처가 5개 이상이고 **팀 규모가 커져서 피처 오너십 분리가 필요할 때** `FoldingFate.Features.Combat`, `FoldingFate.Features.Inventory` 등으로 분리 검토. 소규모 팀에서는 `FoldingFate.Features` 단일 asmdef 유지가 실용적
 - [ ] **게임 상태(State) 관리 패턴** — Menu → Loading → Gameplay → Pause → GameOver 등 앱 레벨 상태 전환 전략. VContainer `LifetimeScope` 계층과 연동하는 State Machine 또는 씬 기반 상태 관리
 - [ ] **씬 전략** — 단일 씬 vs 멀티 씬(Additive Loading) 결정, Addressables 도입 여부
 - [ ] **로깅/디버그 전략** — `Debug.Log` 래핑, 조건부 로깅, 릴리즈 빌드 시 로그 스트리핑
