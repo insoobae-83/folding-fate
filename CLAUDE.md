@@ -228,3 +228,9 @@ Input is configured via `Assets/InputSystem_Actions.inputactions` using the new 
 - Scripts are organized in subdirectories by feature/system
 - `Assets/TutorialInfo/` contains editor-only utility scripts (not game logic)
 - The project uses **Linear color space** (set in Player Settings)
+
+### Unity .meta 파일 관리
+
+- Unity가 생성하는 `.meta` 파일은 **반드시 git에 커밋**해야 한다 — GUID와 import 설정을 담고 있어 누락 시 에셋 참조가 깨짐
+- 새 스크립트/에셋/폴더를 생성한 뒤에는 Unity가 생성한 `.meta` 파일을 함께 커밋할 것
+- `.meta` 파일은 직접 생성하거나 수정하지 않는다 — Unity Editor가 자동 생성한 것만 커밋
