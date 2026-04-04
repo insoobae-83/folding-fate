@@ -103,9 +103,9 @@ namespace FoldingFate.Tests.EditMode.Card
         {
             var so = new SerializedObject(data);
             so.FindProperty("<Id>k__BackingField").stringValue = id;
-            so.FindProperty("<Category>k__BackingField").enumValueIndex = (int)category;
-            so.FindProperty("<Suit>k__BackingField").enumValueIndex = (int)suit;
-            so.FindProperty("<Rank>k__BackingField").enumValueIndex = (int)rank;
+            so.FindProperty("<Category>k__BackingField").intValue = (int)category;
+            so.FindProperty("<Suit>k__BackingField").intValue = (int)suit;
+            so.FindProperty("<Rank>k__BackingField").intValue = (int)rank;
             so.FindProperty("<DisplayName>k__BackingField").stringValue = displayName;
             so.FindProperty("<Description>k__BackingField").stringValue = description;
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -121,7 +121,7 @@ namespace FoldingFate.Tests.EditMode.Card
             so.FindProperty("<BaseCard>k__BackingField").objectReferenceValue = baseCard;
             so.FindProperty("<DisplayName>k__BackingField").stringValue = displayName;
             so.FindProperty("<SkinId>k__BackingField").stringValue = skinId;
-            so.FindProperty("<Element>k__BackingField").enumValueIndex = (int)element;
+            so.FindProperty("<Element>k__BackingField").intValue = (int)element;
 
             var modsProp = so.FindProperty("<StatModifiers>k__BackingField");
             modsProp.ClearArray();
@@ -129,7 +129,7 @@ namespace FoldingFate.Tests.EditMode.Card
             {
                 modsProp.InsertArrayElementAtIndex(i);
                 var elem = modsProp.GetArrayElementAtIndex(i);
-                elem.FindPropertyRelative("Type").enumValueIndex = (int)statModifiers[i].Type;
+                elem.FindPropertyRelative("Type").intValue = (int)statModifiers[i].Type;
                 elem.FindPropertyRelative("Value").floatValue = statModifiers[i].Value;
             }
 
