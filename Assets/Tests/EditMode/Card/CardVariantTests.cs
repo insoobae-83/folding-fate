@@ -150,59 +150,6 @@ namespace FoldingFate.Tests.EditMode.Card
         }
 
         [Test]
-        public void GetStatValue_SingleModifier_ReturnsValue()
-        {
-            var modifiers = new List<StatModifier>
-            {
-                new StatModifier(StatType.Attack, 3f)
-            };
-
-            var variant = new CardVariant(
-                id: "attack_spade_ace",
-                baseCard: _baseSpadeAce,
-                displayName: "Attack Ace",
-                skinId: "",
-                element: Element.None,
-                statModifiers: modifiers);
-
-            Assert.AreEqual(3f, variant.GetStatValue(StatType.Attack));
-        }
-
-        [Test]
-        public void GetStatValue_DuplicateStatType_ReturnsSummed()
-        {
-            var modifiers = new List<StatModifier>
-            {
-                new StatModifier(StatType.Attack, 3f),
-                new StatModifier(StatType.Attack, 5f)
-            };
-
-            var variant = new CardVariant(
-                id: "double_attack_spade_ace",
-                baseCard: _baseSpadeAce,
-                displayName: "Double Attack Ace",
-                skinId: "",
-                element: Element.None,
-                statModifiers: modifiers);
-
-            Assert.AreEqual(8f, variant.GetStatValue(StatType.Attack));
-        }
-
-        [Test]
-        public void GetStatValue_MissingStatType_ReturnsZero()
-        {
-            var variant = new CardVariant(
-                id: "plain_spade_ace",
-                baseCard: _baseSpadeAce,
-                displayName: "Ace of Spades",
-                skinId: "",
-                element: Element.None,
-                statModifiers: new List<StatModifier>());
-
-            Assert.AreEqual(0f, variant.GetStatValue(StatType.Attack));
-        }
-
-        [Test]
         public void StatModifiers_IsReadOnly_CannotModifyExternally()
         {
             var modifiers = new List<StatModifier>

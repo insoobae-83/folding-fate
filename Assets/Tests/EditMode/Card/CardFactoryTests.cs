@@ -13,11 +13,13 @@ namespace FoldingFate.Tests.EditMode.Card
     public class CardFactoryTests
     {
         private CardFactory _factory;
+        private CardStatSystem _statSystem;
 
         [SetUp]
         public void SetUp()
         {
             _factory = new CardFactory();
+            _statSystem = new CardStatSystem();
         }
 
         [Test]
@@ -91,7 +93,7 @@ namespace FoldingFate.Tests.EditMode.Card
             Assert.AreEqual("skin_fire", variant.SkinId);
             Assert.AreEqual(Element.Fire, variant.Element);
             Assert.AreEqual(1, variant.StatModifiers.Count);
-            Assert.AreEqual(3f, variant.GetStatValue(StatType.Attack));
+            Assert.AreEqual(3f, _statSystem.GetStatValue(variant, StatType.Attack));
 
             Object.DestroyImmediate(baseData);
             Object.DestroyImmediate(variantData);

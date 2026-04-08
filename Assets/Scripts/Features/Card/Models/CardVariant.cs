@@ -32,17 +32,5 @@ namespace FoldingFate.Features.Card.Models
             StatModifiers = new List<StatModifier>(statModifiers).AsReadOnly();
         }
 
-        public float GetStatValue(StatType type)
-        {
-            float sum = 0f;
-            for (int i = 0; i < StatModifiers.Count; i++)
-            {
-                if (StatModifiers[i].Type == type)
-                {
-                    sum += StatModifiers[i].Value;
-                }
-            }
-            return sum;
-        }
     }
 }

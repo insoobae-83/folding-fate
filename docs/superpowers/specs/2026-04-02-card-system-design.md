@@ -88,7 +88,7 @@ public class CardVariantData : ScriptableObject
 - 외형(SkinId), 속성(Element), 스탯(StatModifiers)은 각각 독립적으로 있거나 없을 수 있음
 - 하나의 BaseCard에 대해 여러 CardVariantData 에셋 가능
 
-### Domain Models (순수 C#, Rich Domain Model)
+### Domain Models (순수 C#, Anemic Domain Model)
 
 `Assets/Scripts/Features/Card/Models/`에 배치. Unity 의존성 없음.
 
@@ -125,11 +125,8 @@ public class CardVariant
     public bool HasElement => Element != Element.None;
     public bool HasSkin => !string.IsNullOrEmpty(SkinId);
     public bool HasStatModifiers => StatModifiers.Count > 0;
-    public float GetStatValue(StatType type) => ...;
 }
 ```
-
-- `GetStatValue`: 동일 StatType 중복 시 처리 방식은 추후 확정 (당분간 합산으로 구현, 변경 가능)
 
 ### System
 
@@ -147,6 +144,17 @@ public class CardFactory
 
 - ScriptableObject → 순수 C# 도메인 모델 변환 담당
 - VContainer로 주입
+
+#### CardStatSystem
+
+```csharp
+public class CardStatSystem
+{
+    public float GetStatValue(CardVariant variant, StatType type) => ...;
+}
+```
+
+- 동일 StatType 중복 시 합산 (변경 가능)
 
 ## Folder Structure
 
