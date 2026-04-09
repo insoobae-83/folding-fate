@@ -31,6 +31,7 @@ namespace FoldingFate.Features.Card.Systems
             // Checks are ordered highest-to-lowest: each TryXxx assumes higher hands were already eliminated.
             if (TryFourOfAKind(cards, out var foak)) return foak;
             if (TryFullHouse(cards, out var fh)) return fh;
+            if (TryStraight(cards, out var st)) return st;
             if (TryThreeOfAKind(cards, out var toak)) return toak;
             if (TryTwoPair(cards, out var tp)) return tp;
             if (TryOnePair(cards, out var op)) return op;
@@ -134,6 +135,27 @@ namespace FoldingFate.Features.Card.Systems
             result = new HandResult(HandRank.FullHouse, cards.ToList(),
                 new List<int> { tripleRank, pairs[0].Key });
             return true;
+        }
+
+        private static bool TryStraight(List<BaseCard> cards, out HandResult result)
+        {
+            result = null;
+            var values = new HashSet<int>(cards
+                .Where(c => c.Rank.HasValue)
+                .Select(c => AceHighValue(c.Rank.Value)));
+            if (values.Contains(14)) values.Add(1); // Ace Low 지원 (Duplicate Ace)
+
+            for (int top = 14; top >= 5; top--)
+            {
+                if (values.Contains(top) && values.Contains(top - 1) && values.Contains(top - 2)
+                    && values.Contains(top - 3) && values.Contains(top - 4))
+                {
+                    // top=14: A-K-Q-J-10, top=5: A(1)-2-3-4-5 (wheel)
+                    result = new HandResult(HandRank.Straight, cards.ToList(), new List<int> { top });
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static bool TryThreeOfAKind(List<BaseCard> cards, out HandResult result)
