@@ -76,5 +76,47 @@ namespace FoldingFate.Tests.EditMode.Card
             };
             Assert.AreEqual(HandRank.TwoPair, _evaluator.Evaluate(cards).Rank);
         }
+
+        [Test]
+        public void Evaluate_ThreeOfAKind_ReturnsThreeOfAKind()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Queen),
+                S(Suit.Heart, Rank.Queen),
+                S(Suit.Diamond, Rank.Queen),
+                S(Suit.Club, Rank.Two),
+                S(Suit.Spade, Rank.Five)
+            };
+            Assert.AreEqual(HandRank.ThreeOfAKind, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_FullHouse_ReturnsFullHouse()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.King),
+                S(Suit.Club, Rank.Ace),
+                S(Suit.Spade, Rank.Ace)
+            };
+            Assert.AreEqual(HandRank.FullHouse, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_FourOfAKind_ReturnsFourOfAKind()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Jack),
+                S(Suit.Heart, Rank.Jack),
+                S(Suit.Diamond, Rank.Jack),
+                S(Suit.Club, Rank.Jack),
+                S(Suit.Spade, Rank.Three)
+            };
+            Assert.AreEqual(HandRank.FourOfAKind, _evaluator.Evaluate(cards).Rank);
+        }
     }
 }
