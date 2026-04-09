@@ -161,5 +161,47 @@ namespace FoldingFate.Tests.EditMode.Card
             };
             Assert.AreEqual(HandRank.Straight, _evaluator.Evaluate(cards).Rank);
         }
+
+        [Test]
+        public void Evaluate_Flush_ReturnsFlush()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Heart, Rank.Two),
+                S(Suit.Heart, Rank.Five),
+                S(Suit.Heart, Rank.Seven),
+                S(Suit.Heart, Rank.Nine),
+                S(Suit.Heart, Rank.King)
+            };
+            Assert.AreEqual(HandRank.Flush, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_StraightFlush_ReturnsStraightFlush()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Diamond, Rank.Five),
+                S(Suit.Diamond, Rank.Six),
+                S(Suit.Diamond, Rank.Seven),
+                S(Suit.Diamond, Rank.Eight),
+                S(Suit.Diamond, Rank.Nine)
+            };
+            Assert.AreEqual(HandRank.StraightFlush, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_RoyalFlush_ReturnsRoyalFlush()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Club, Rank.Ten),
+                S(Suit.Club, Rank.Jack),
+                S(Suit.Club, Rank.Queen),
+                S(Suit.Club, Rank.King),
+                S(Suit.Club, Rank.Ace)
+            };
+            Assert.AreEqual(HandRank.RoyalFlush, _evaluator.Evaluate(cards).Rank);
+        }
     }
 }

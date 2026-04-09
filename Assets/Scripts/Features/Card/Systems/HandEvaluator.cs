@@ -29,8 +29,11 @@ namespace FoldingFate.Features.Card.Systems
         private HandResult EvaluateBest(List<BaseCard> cards, int jokerCount)
         {
             // Checks are ordered highest-to-lowest: each TryXxx assumes higher hands were already eliminated.
+            if (TryRoyalFlush(cards, out var rf)) return rf;
+            if (TryStraightFlush(cards, out var sf)) return sf;
             if (TryFourOfAKind(cards, out var foak)) return foak;
             if (TryFullHouse(cards, out var fh)) return fh;
+            if (TryFlush(cards, out var fl)) return fl;
             if (TryStraight(cards, out var st)) return st;
             if (TryThreeOfAKind(cards, out var toak)) return toak;
             if (TryTwoPair(cards, out var tp)) return tp;
@@ -176,6 +179,69 @@ namespace FoldingFate.Features.Card.Systems
             tiebreak.AddRange(kickers);
             result = new HandResult(HandRank.ThreeOfAKind, cards.ToList(), tiebreak);
             return true;
+        }
+
+        private static bool TryRoyalFlush(List<BaseCard> cards, out HandResult result)
+        {
+            result = null;
+            var royalValues = new HashSet<int> { 10, 11, 12, 13, 14 };
+            foreach (Suit suit in System.Enum.GetValues(typeof(Suit)))
+            {
+                var matching = cards
+                    .Where(c => c.Suit == suit && c.Rank.HasValue
+                                && royalValues.Contains(AceHighValue(c.Rank.Value)))
+                    .ToList();
+                if (matching.Count >= 5)
+                {
+                    result = new HandResult(HandRank.RoyalFlush, matching, new List<int> { 0 });
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool TryStraightFlush(List<BaseCard> cards, out HandResult result)
+        {
+            result = null;
+            foreach (Suit suit in System.Enum.GetValues(typeof(Suit)))
+            {
+                var suitCards = cards.Where(c => c.Suit == suit && c.Rank.HasValue).ToList();
+                if (suitCards.Count < 5) continue;
+
+                var values = new HashSet<int>(suitCards.Select(c => AceHighValue(c.Rank.Value)));
+                if (values.Contains(14)) values.Add(1); // Ace Low 지원
+
+                // top=14는 RoyalFlush가 처리하므로 13부터 시작
+                for (int top = 13; top >= 5; top--)
+                {
+                    if (values.Contains(top) && values.Contains(top - 1) && values.Contains(top - 2)
+                        && values.Contains(top - 3) && values.Contains(top - 4))
+                    {
+                        result = new HandResult(HandRank.StraightFlush, suitCards, new List<int> { top });
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool TryFlush(List<BaseCard> cards, out HandResult result)
+        {
+            result = null;
+            foreach (Suit suit in System.Enum.GetValues(typeof(Suit)))
+            {
+                var suitCards = cards
+                    .Where(c => c.Suit == suit && c.Rank.HasValue)
+                    .OrderByDescending(c => AceHighValue(c.Rank.Value))
+                    .ToList();
+                if (suitCards.Count < 5) continue;
+
+                var top5 = suitCards.Take(5).ToList();
+                var tiebreak = top5.Select(c => AceHighValue(c.Rank.Value)).ToList();
+                result = new HandResult(HandRank.Flush, top5, tiebreak);
+                return true;
+            }
+            return false;
         }
     }
 }
