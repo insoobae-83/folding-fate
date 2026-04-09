@@ -140,7 +140,7 @@ public class HandEvaluator
 
 ### Joker 와일드 처리
 
-Joker를 실제 카드로 대입하는 대신, 족보 체커 내부에서 `jokerCount` 매개변수로 처리한다.
+Joker 수에 상한 없음 — 입력에 포함된 Joker 전부를 와일드로 처리한다. 족보 체커 내부에서 `jokerCount` 매개변수로 전달한다.
 
 예시:
 - Joker 1장 + 페어 → ThreeOfAKind
@@ -175,7 +175,7 @@ for (int top = 14; top >= 5; top--)
 
 테스트 커버리지:
 - 10가지 족보 각각 정상 판정
-- Joker 와일드 조합 (Joker 1장, 2장)
+- Joker 와일드 조합 (0장, 1장, 2장, 다수 Joker)
 - Ace High / Ace Low 스트레이트
 - 같은 족보끼리 타이브레이크 비교
 - n장 중 best 5 선택 (7장 입력 등)
