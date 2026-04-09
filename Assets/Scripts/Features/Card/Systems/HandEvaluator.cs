@@ -259,11 +259,6 @@ namespace FoldingFate.Features.Card.Systems
                     return true;
                 }
             }
-            if (jokerCount >= 3)
-            {
-                result = new HandResult(HandRank.ThreeOfAKind, new List<BaseCard>(), new List<int> { 14, 0, 0 });
-                return true;
-            }
             return false;
         }
 
@@ -308,12 +303,16 @@ namespace FoldingFate.Features.Card.Systems
         private static bool TryStraightFlush(List<BaseCard> cards, int jokerCount, out HandResult result)
         {
             result = null;
+            int bestTop = -1;
+            List<BaseCard> bestSuitCards = null;
+
             foreach (Suit suit in System.Enum.GetValues(typeof(Suit)))
             {
                 var suitCards = cards.Where(c => c.Suit == suit && c.Rank.HasValue).ToList();
                 var values = new HashSet<int>(suitCards.Select(c => AceHighValue(c.Rank.Value)));
-                if (values.Contains(14)) values.Add(1);
+                if (values.Contains(14)) values.Add(1); // Ace Low 지원
 
+                // top=14는 RoyalFlush가 처리하므로 13부터 시작
                 for (int top = 13; top >= 5; top--)
                 {
                     int needed = 0;
@@ -321,10 +320,20 @@ namespace FoldingFate.Features.Card.Systems
                         if (!values.Contains(top - i)) needed++;
                     if (needed <= jokerCount)
                     {
-                        result = new HandResult(HandRank.StraightFlush, suitCards, new List<int> { top });
-                        return true;
+                        if (top > bestTop)
+                        {
+                            bestTop = top;
+                            bestSuitCards = suitCards;
+                        }
+                        break; // This suit's best found; check next suit
                     }
                 }
+            }
+
+            if (bestTop >= 0)
+            {
+                result = new HandResult(HandRank.StraightFlush, bestSuitCards, new List<int> { bestTop });
+                return true;
             }
             return false;
         }
