@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FoldingFate.Core;
@@ -23,7 +24,17 @@ namespace FoldingFate.Features.Card.Systems
             if (standard.Count == 0 && jokerCount == 0)
                 return new HandResult(HandRank.HighCard, new List<BaseCard>(), new List<int> { 0 });
 
-            return EvaluateBest(standard, jokerCount);
+            if (standard.Count <= 5)
+                return EvaluateBest(standard, jokerCount);
+
+            // n > 5: nC5 combination search for best hand
+            HandResult best = null;
+            foreach (var combo in GetCombinations(standard, 5))
+            {
+                var r = EvaluateBest(combo, jokerCount);
+                if (best == null || r.CompareTo(best) > 0) best = r;
+            }
+            return best;
         }
 
         private HandResult EvaluateBest(List<BaseCard> cards, int jokerCount)
@@ -179,6 +190,20 @@ namespace FoldingFate.Features.Card.Systems
             tiebreak.AddRange(kickers);
             result = new HandResult(HandRank.ThreeOfAKind, cards.ToList(), tiebreak);
             return true;
+        }
+
+        private static IEnumerable<List<BaseCard>> GetCombinations(List<BaseCard> list, int k)
+        {
+            if (k == 0) { yield return new List<BaseCard>(); yield break; }
+            for (int i = 0; i <= list.Count - k; i++)
+            {
+                var rest = list.GetRange(i + 1, list.Count - i - 1);
+                foreach (var combo in GetCombinations(rest, k - 1))
+                {
+                    combo.Insert(0, list[i]);
+                    yield return combo;
+                }
+            }
         }
 
         private static bool TryRoyalFlush(List<BaseCard> cards, out HandResult result)

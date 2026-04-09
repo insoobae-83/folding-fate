@@ -203,5 +203,40 @@ namespace FoldingFate.Tests.EditMode.Card
             };
             Assert.AreEqual(HandRank.RoyalFlush, _evaluator.Evaluate(cards).Rank);
         }
+
+        [Test]
+        public void Evaluate_SevenCards_ReturnsBestHand()
+        {
+            // Heart 5 cards (Flush) + Spade Ace + Club Ace -> best is Flush
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Heart, Rank.Two),
+                S(Suit.Heart, Rank.Five),
+                S(Suit.Heart, Rank.Seven),
+                S(Suit.Heart, Rank.Nine),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Spade, Rank.Ace),
+                S(Suit.Club, Rank.Ace)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(HandRank.Flush, result.Rank);
+            Assert.AreEqual(5, result.BestHand.Count);
+        }
+
+        [Test]
+        public void Evaluate_SixCards_PicksBestFive()
+        {
+            // FourOfAKind(J) + OnePair(K) -> FourOfAKind selected
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Jack),
+                S(Suit.Heart, Rank.Jack),
+                S(Suit.Diamond, Rank.Jack),
+                S(Suit.Club, Rank.Jack),
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King)
+            };
+            Assert.AreEqual(HandRank.FourOfAKind, _evaluator.Evaluate(cards).Rank);
+        }
     }
 }
