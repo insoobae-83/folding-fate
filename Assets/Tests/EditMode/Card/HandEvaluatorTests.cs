@@ -238,5 +238,61 @@ namespace FoldingFate.Tests.EditMode.Card
             };
             Assert.AreEqual(HandRank.FourOfAKind, _evaluator.Evaluate(cards).Rank);
         }
+
+        [Test]
+        public void Evaluate_OneJokerWithPair_ReturnsThreeOfAKind()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Three),
+                S(Suit.Club, Rank.Seven),
+                J()
+            };
+            Assert.AreEqual(HandRank.ThreeOfAKind, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_TwoJokersWithPair_ReturnsFourOfAKind()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Three),
+                J(),
+                J()
+            };
+            Assert.AreEqual(HandRank.FourOfAKind, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_OneJokerWithFourFlushCards_ReturnsFlush()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Heart, Rank.Two),
+                S(Suit.Heart, Rank.Five),
+                S(Suit.Heart, Rank.Seven),
+                S(Suit.Heart, Rank.Nine),
+                J()
+            };
+            Assert.AreEqual(HandRank.Flush, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_OneJokerWithFourStraightCards_ReturnsStraight()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Five),
+                S(Suit.Heart, Rank.Six),
+                S(Suit.Diamond, Rank.Seven),
+                S(Suit.Club, Rank.Eight),
+                J()
+            };
+            Assert.AreEqual(HandRank.Straight, _evaluator.Evaluate(cards).Rank);
+        }
     }
 }
