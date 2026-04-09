@@ -28,6 +28,7 @@ namespace FoldingFate.Features.Card.Systems
 
         private HandResult EvaluateBest(List<BaseCard> cards, int jokerCount)
         {
+            // Checks are ordered highest-to-lowest: each TryXxx assumes higher hands were already eliminated.
             if (TryTwoPair(cards, out var tp)) return tp;
             if (TryOnePair(cards, out var op)) return op;
             return MakeHighCard(cards);
