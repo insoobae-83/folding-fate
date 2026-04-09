@@ -142,7 +142,15 @@ namespace FoldingFate.Features.Card.Systems
         {
             result = null;
             var counts = GetRankCounts(cards);
-            if (counts.Count == 0) return false;
+            if (counts.Count == 0)
+            {
+                if (jokerCount >= 4)
+                {
+                    result = new HandResult(HandRank.FourOfAKind, new List<BaseCard>(), new List<int> { 14, 0 });
+                    return true;
+                }
+                return false;
+            }
 
             var sorted = counts.OrderByDescending(kv => kv.Value).ThenByDescending(kv => kv.Key).ToList();
             foreach (var kv in sorted)
