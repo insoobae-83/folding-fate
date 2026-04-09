@@ -12,6 +12,8 @@ namespace FoldingFate.Features.Card.Models
 
         public HandResult(HandRank rank, List<BaseCard> bestHand, List<int> tiebreakValues)
         {
+            if (bestHand == null) throw new ArgumentNullException(nameof(bestHand));
+            if (tiebreakValues == null) throw new ArgumentNullException(nameof(tiebreakValues));
             Rank = rank;
             BestHand = bestHand.AsReadOnly();
             _tiebreakValues = tiebreakValues.AsReadOnly();
