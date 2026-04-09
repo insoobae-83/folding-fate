@@ -294,5 +294,84 @@ namespace FoldingFate.Tests.EditMode.Card
             };
             Assert.AreEqual(HandRank.Straight, _evaluator.Evaluate(cards).Rank);
         }
+
+        [Test]
+        public void Evaluate_CustomCardsIgnored_EvaluatesRemainingCards()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Three),
+                S(Suit.Club, Rank.Seven),
+                S(Suit.Spade, Rank.Ace),
+                Custom(),
+                Custom()
+            };
+            Assert.AreEqual(HandRank.OnePair, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_ThreeCards_ReturnsValidResult()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Ace),
+                S(Suit.Heart, Rank.Ace),
+                S(Suit.Diamond, Rank.King)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(HandRank.OnePair, result.Rank);
+            Assert.AreEqual(3, result.BestHand.Count);
+        }
+
+        [Test]
+        public void Compare_HigherHandRankWins()
+        {
+            var flush = _evaluator.Evaluate(new List<BaseCard>
+            {
+                S(Suit.Heart, Rank.Two), S(Suit.Heart, Rank.Five),
+                S(Suit.Heart, Rank.Seven), S(Suit.Heart, Rank.Nine), S(Suit.Heart, Rank.King)
+            });
+            var straight = _evaluator.Evaluate(new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Five), S(Suit.Heart, Rank.Six),
+                S(Suit.Diamond, Rank.Seven), S(Suit.Club, Rank.Eight), S(Suit.Spade, Rank.Nine)
+            });
+            Assert.Greater(flush.CompareTo(straight), 0);
+        }
+
+        [Test]
+        public void Compare_SameRankHigherKickerWins()
+        {
+            // OnePair K with Ace kicker vs OnePair K with Queen kicker
+            var pairKingAceKicker = _evaluator.Evaluate(new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King), S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Ace), S(Suit.Club, Rank.Three), S(Suit.Spade, Rank.Two)
+            });
+            var pairKingQueenKicker = _evaluator.Evaluate(new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King), S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Queen), S(Suit.Club, Rank.Three), S(Suit.Spade, Rank.Two)
+            });
+            Assert.Greater(pairKingAceKicker.CompareTo(pairKingQueenKicker), 0);
+        }
+
+        [Test]
+        public void Compare_IdenticalHands_ReturnsZero()
+        {
+            var hand1 = _evaluator.Evaluate(new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King), S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Ace), S(Suit.Club, Rank.Three), S(Suit.Spade, Rank.Two)
+            });
+            var hand2 = _evaluator.Evaluate(new List<BaseCard>
+            {
+                S(Suit.Club, Rank.King), S(Suit.Diamond, Rank.King),
+                S(Suit.Spade, Rank.Ace), S(Suit.Heart, Rank.Three), S(Suit.Club, Rank.Two)
+            });
+            Assert.AreEqual(0, hand1.CompareTo(hand2));
+        }
     }
 }
