@@ -28,6 +28,8 @@ namespace FoldingFate.Features.Card.Systems
 
         private HandResult EvaluateBest(List<BaseCard> cards, int jokerCount)
         {
+            if (TryTwoPair(cards, out var tp)) return tp;
+            if (TryOnePair(cards, out var op)) return op;
             return MakeHighCard(cards);
         }
 
@@ -54,6 +56,44 @@ namespace FoldingFate.Features.Card.Systems
                 counts[v] = counts.GetValueOrDefault(v, 0) + 1;
             }
             return counts;
+        }
+
+        private static bool TryOnePair(List<BaseCard> cards, out HandResult result)
+        {
+            result = null;
+            var counts = GetRankCounts(cards);
+            var pairs = counts.Where(kv => kv.Value >= 2).OrderByDescending(kv => kv.Key).ToList();
+            if (pairs.Count == 0) return false;
+
+            int pairRank = pairs[0].Key;
+            var kickers = counts
+                .Where(kv => kv.Key != pairRank)
+                .OrderByDescending(kv => kv.Key)
+                .Take(3)
+                .Select(kv => kv.Key)
+                .ToList();
+            var tiebreak = new List<int> { pairRank };
+            tiebreak.AddRange(kickers);
+            result = new HandResult(HandRank.OnePair, cards.ToList(), tiebreak);
+            return true;
+        }
+
+        private static bool TryTwoPair(List<BaseCard> cards, out HandResult result)
+        {
+            result = null;
+            var counts = GetRankCounts(cards);
+            var pairs = counts.Where(kv => kv.Value >= 2).OrderByDescending(kv => kv.Key).ToList();
+            if (pairs.Count < 2) return false;
+
+            int highPair = pairs[0].Key;
+            int lowPair = pairs[1].Key;
+            int kicker = counts
+                .Where(kv => kv.Key != highPair && kv.Key != lowPair)
+                .OrderByDescending(kv => kv.Key)
+                .Select(kv => kv.Key)
+                .FirstOrDefault();
+            result = new HandResult(HandRank.TwoPair, cards.ToList(), new List<int> { highPair, lowPair, kicker });
+            return true;
         }
     }
 }

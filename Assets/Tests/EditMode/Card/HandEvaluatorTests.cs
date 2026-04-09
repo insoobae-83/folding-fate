@@ -48,5 +48,33 @@ namespace FoldingFate.Tests.EditMode.Card
             var result = _evaluator.Evaluate(new List<BaseCard>());
             Assert.AreEqual(HandRank.HighCard, result.Rank);
         }
+
+        [Test]
+        public void Evaluate_OnePair_ReturnsOnePair()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Three),
+                S(Suit.Club, Rank.Seven),
+                S(Suit.Spade, Rank.Ace)
+            };
+            Assert.AreEqual(HandRank.OnePair, _evaluator.Evaluate(cards).Rank);
+        }
+
+        [Test]
+        public void Evaluate_TwoPair_ReturnsTwoPair()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King),
+                S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.Three),
+                S(Suit.Club, Rank.Three),
+                S(Suit.Spade, Rank.Ace)
+            };
+            Assert.AreEqual(HandRank.TwoPair, _evaluator.Evaluate(cards).Rank);
+        }
     }
 }
