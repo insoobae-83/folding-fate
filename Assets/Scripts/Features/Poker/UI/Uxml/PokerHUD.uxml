@@ -3,6 +3,7 @@
     <ui:Style src="project://database/Assets/Scripts/Features/Poker/UI/Uss/PokerHUD.uss" />
     <ui:VisualElement name="poker-root" class="poker-root">
         <ui:Label name="deck-count-label" class="deck-count-label" text="남은 카드: 52" />
+        <ui:VisualElement name="showcase-container" class="showcase-container" />
         <ui:VisualElement name="hand-container" class="hand-container" />
         <ui:Label name="result-label" class="result-label" text="" />
         <ui:VisualElement class="button-row">

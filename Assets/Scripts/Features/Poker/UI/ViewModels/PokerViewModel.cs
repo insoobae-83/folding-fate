@@ -11,11 +11,14 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
     {
         private readonly CompositeDisposable _disposables = new();
         private readonly ReactiveProperty<string> _handResultText;
+        private readonly ReactiveProperty<ShowcaseState> _showcase;
 
         public ReadOnlyReactiveProperty<IReadOnlyList<BaseCard>> Hand { get; }
         public ReadOnlyReactiveProperty<IReadOnlyList<int>> SelectedIndices { get; }
         public ReadOnlyReactiveProperty<int> DeckRemaining { get; }
         public ReadOnlyReactiveProperty<string> HandResultText { get; }
+        public ReadOnlyReactiveProperty<ShowcaseState> Showcase { get; }
+        public ReadOnlyReactiveProperty<bool> IsShowcasing { get; }
 
         public ReadOnlyReactiveProperty<bool> CanSubmit { get; }
         public ReadOnlyReactiveProperty<bool> CanDraw { get; }
@@ -28,20 +31,31 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         public PokerViewModel(HandModel hand, DeckModel deck)
         {
             _handResultText = new ReactiveProperty<string>(string.Empty).AddTo(_disposables);
+            _showcase = new ReactiveProperty<ShowcaseState>(ShowcaseState.Inactive).AddTo(_disposables);
+
             Hand = hand.Cards.ToReadOnlyReactiveProperty().AddTo(_disposables);
             SelectedIndices = hand.SelectedIndices.ToReadOnlyReactiveProperty().AddTo(_disposables);
             DeckRemaining = deck.RemainingCount.ToReadOnlyReactiveProperty().AddTo(_disposables);
             HandResultText = _handResultText.ToReadOnlyReactiveProperty().AddTo(_disposables);
+            Showcase = _showcase.ToReadOnlyReactiveProperty().AddTo(_disposables);
 
-            ToggleSelectCommand = new ReactiveCommand<int>().AddTo(_disposables);
+            var notShowcasing = _showcase.Select(s => !s.IsActive);
+            IsShowcasing = _showcase.Select(s => s.IsActive)
+                .ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
 
-            var canSubmit = hand.SelectedIndices.Select(indices => indices.Count >= 1 && indices.Count <= 5);
+            ToggleSelectCommand = new ReactiveCommand<int>(notShowcasing, initialCanExecute: true).AddTo(_disposables);
+
+            var canSubmit = hand.SelectedIndices
+                .Select(indices => indices.Count >= 1 && indices.Count <= 5)
+                .CombineLatest(notShowcasing, (hasSelection, notShowing) => hasSelection && notShowing);
             CanSubmit = canSubmit.ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
             SubmitCommand = new ReactiveCommand(canSubmit, initialCanExecute: false).AddTo(_disposables);
 
-            var canDraw = hand.Cards.Select(cards => cards.Count < hand.MaxHandSize);
-            CanDraw = canDraw.ToReadOnlyReactiveProperty(initialValue: true).AddTo(_disposables);
-            DrawCommand = new ReactiveCommand(canDraw, initialCanExecute: true).AddTo(_disposables);
+            var canDraw = hand.Cards
+                .Select(cards => cards.Count < hand.MaxHandSize)
+                .CombineLatest(notShowcasing, (canD, notShowing) => canD && notShowing);
+            CanDraw = canDraw.ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
+            DrawCommand = new ReactiveCommand(canDraw, initialCanExecute: false).AddTo(_disposables);
 
             DiscardCommand = new ReactiveCommand(canSubmit, initialCanExecute: false).AddTo(_disposables);
         }
@@ -49,6 +63,19 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         public void PushHandResult(HandResult result)
         {
             _handResultText.Value = ToDisplayString(result.Rank);
+        }
+
+        public void BeginShowcase(HandResult result)
+        {
+            _showcase.Value = new ShowcaseState(
+                true,
+                result.BestHand,
+                ToDisplayString(result.Rank));
+        }
+
+        public void EndShowcase()
+        {
+            _showcase.Value = ShowcaseState.Inactive;
         }
 
         private static string ToDisplayString(HandRank rank) => rank switch

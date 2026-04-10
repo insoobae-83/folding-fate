@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using VContainer;
 using FoldingFate.Core;
 using FoldingFate.Features.Card.Models;
+using FoldingFate.Features.Poker.Models;
 using FoldingFate.Features.Poker.UI.ViewModels;
 
 namespace FoldingFate.Features.Poker.UI.Views
@@ -21,6 +22,8 @@ namespace FoldingFate.Features.Poker.UI.Views
         private Button _submitButton;
         private Button _drawButton;
         private Button _discardButton;
+        private VisualElement _showcaseContainer;
+        private VisualElement _pokerRoot;
 
         private readonly List<VisualElement> _cardElements = new();
 
@@ -32,7 +35,9 @@ namespace FoldingFate.Features.Poker.UI.Views
         private void Start()
         {
             var root = _doc.rootVisualElement;
+            _pokerRoot = root.Q("poker-root");
             _handContainer = root.Q("hand-container");
+            _showcaseContainer = root.Q("showcase-container");
             _resultLabel = root.Q<Label>("result-label");
             _deckCountLabel = root.Q<Label>("deck-count-label");
             _submitButton = root.Q<Button>("submit-button");
@@ -47,6 +52,7 @@ namespace FoldingFate.Features.Poker.UI.Views
             _vm.SelectedIndices.Subscribe(UpdateSelectionVisuals).AddTo(this);
             _vm.HandResultText.Subscribe(text => _resultLabel.text = text).AddTo(this);
             _vm.DeckRemaining.Subscribe(count => _deckCountLabel.text = $"남은 카드: {count}").AddTo(this);
+            _vm.Showcase.Subscribe(RenderShowcase).AddTo(this);
 
             _vm.CanSubmit.Subscribe(v => _submitButton.SetEnabled(v)).AddTo(this);
             _vm.CanDraw.Subscribe(v => _drawButton.SetEnabled(v)).AddTo(this);
@@ -108,6 +114,65 @@ namespace FoldingFate.Features.Poker.UI.Views
                 else
                     _cardElements[i].RemoveFromClassList("card--selected");
             }
+        }
+
+        private void RenderShowcase(ShowcaseState state)
+        {
+            _showcaseContainer.Clear();
+
+            if (state.IsActive)
+            {
+                _showcaseContainer.AddToClassList("showcase-container--active");
+                _pokerRoot.AddToClassList("poker-root--showcasing");
+
+                var cardsRow = new VisualElement();
+                cardsRow.AddToClassList("showcase-cards");
+
+                foreach (var card in state.Cards)
+                {
+                    var cardEl = CreateShowcaseCardElement(card);
+                    cardsRow.Add(cardEl);
+                }
+
+                var rankLabel = new Label();
+                rankLabel.AddToClassList("showcase-rank-text");
+                rankLabel.text = state.RankText;
+
+                _showcaseContainer.Add(cardsRow);
+                _showcaseContainer.Add(rankLabel);
+            }
+            else
+            {
+                _showcaseContainer.RemoveFromClassList("showcase-container--active");
+                _pokerRoot.RemoveFromClassList("poker-root--showcasing");
+            }
+        }
+
+        private VisualElement CreateShowcaseCardElement(BaseCard card)
+        {
+            var el = new VisualElement();
+            el.AddToClassList("showcase-card");
+
+            bool isRed = card.Suit == Suit.Heart || card.Suit == Suit.Diamond;
+            el.AddToClassList(isRed ? "card--red" : "card--black");
+
+            var rankLabel = new Label { name = "card-top-rank" };
+            rankLabel.AddToClassList("card-rank");
+            rankLabel.text = RankToDisplay(card.Rank);
+
+            var suitTopLabel = new Label { name = "card-suit" };
+            suitTopLabel.AddToClassList("card-suit--top");
+            suitTopLabel.text = SuitToSymbol(card.Suit);
+
+            var centerSuitLabel = new Label { name = "card-center-suit" };
+            centerSuitLabel.AddToClassList("card-center-suit");
+            centerSuitLabel.text = SuitToSymbol(card.Suit);
+
+            el.Add(rankLabel);
+            el.Add(suitTopLabel);
+            el.Add(centerSuitLabel);
+
+            return el;
         }
 
         private static string SuitToSymbol(Suit? suit) => suit switch
