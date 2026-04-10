@@ -23,6 +23,7 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         public ReactiveCommand<int> ToggleSelectCommand { get; }
         public ReactiveCommand SubmitCommand { get; }
         public ReactiveCommand DrawCommand { get; }
+        public ReactiveCommand DiscardCommand { get; }
 
         public PokerViewModel(HandModel hand, DeckModel deck)
         {
@@ -41,6 +42,8 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
             var canDraw = hand.Cards.Select(cards => cards.Count < hand.MaxHandSize);
             CanDraw = canDraw.ToReadOnlyReactiveProperty(initialValue: true).AddTo(_disposables);
             DrawCommand = new ReactiveCommand(canDraw, initialCanExecute: true).AddTo(_disposables);
+
+            DiscardCommand = new ReactiveCommand(canSubmit, initialCanExecute: false).AddTo(_disposables);
         }
 
         public void PushHandResult(HandResult result)
