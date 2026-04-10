@@ -111,6 +111,7 @@ namespace FoldingFate.Features.Poker.UI.Views
                 cancellationToken: this.destroyCancellationToken);
 
             cardEl.RemoveFromClassList("card--dealing");
+            cardEl.style.translate = StyleKeyword.Null;
             cardEl.style.transitionDuration = StyleKeyword.Null;
         }
 
