@@ -2,7 +2,9 @@
     "name": "FoldingFate.Features",
     "rootNamespace": "FoldingFate.Features",
     "references": [
-        "FoldingFate.Core"
+        "FoldingFate.Core",
+        "R3.Unity",
+        "VContainer"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

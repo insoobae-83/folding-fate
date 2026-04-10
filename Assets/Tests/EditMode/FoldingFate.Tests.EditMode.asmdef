@@ -3,7 +3,9 @@
     "rootNamespace": "FoldingFate.Tests.EditMode",
     "references": [
         "FoldingFate.Core",
-        "FoldingFate.Features"
+        "FoldingFate.Features",
+        "R3.Unity",
+        "VContainer"
     ],
     "includePlatforms": [
         "Editor"
