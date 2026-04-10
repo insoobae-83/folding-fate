@@ -12,6 +12,7 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         private readonly CompositeDisposable _disposables = new();
         private readonly ReactiveProperty<string> _handResultText;
         private readonly ReactiveProperty<ShowcaseState> _showcase;
+        private readonly ReactiveProperty<bool> _isDealing;
 
         public ReadOnlyReactiveProperty<IReadOnlyList<BaseCard>> Hand { get; }
         public ReadOnlyReactiveProperty<IReadOnlyList<int>> SelectedIndices { get; }
@@ -19,19 +20,19 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         public ReadOnlyReactiveProperty<string> HandResultText { get; }
         public ReadOnlyReactiveProperty<ShowcaseState> Showcase { get; }
         public ReadOnlyReactiveProperty<bool> IsShowcasing { get; }
+        public ReadOnlyReactiveProperty<bool> IsDealing { get; }
 
         public ReadOnlyReactiveProperty<bool> CanSubmit { get; }
-        public ReadOnlyReactiveProperty<bool> CanDraw { get; }
 
         public ReactiveCommand<int> ToggleSelectCommand { get; }
         public ReactiveCommand SubmitCommand { get; }
-        public ReactiveCommand DrawCommand { get; }
         public ReactiveCommand DiscardCommand { get; }
 
         public PokerViewModel(HandModel hand, DeckModel deck)
         {
             _handResultText = new ReactiveProperty<string>(string.Empty).AddTo(_disposables);
             _showcase = new ReactiveProperty<ShowcaseState>(ShowcaseState.Inactive).AddTo(_disposables);
+            _isDealing = new ReactiveProperty<bool>(false).AddTo(_disposables);
 
             Hand = hand.Cards.ToReadOnlyReactiveProperty().AddTo(_disposables);
             SelectedIndices = hand.SelectedIndices.ToReadOnlyReactiveProperty().AddTo(_disposables);
@@ -42,20 +43,18 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
             var notShowcasing = _showcase.Select(s => !s.IsActive);
             IsShowcasing = _showcase.Select(s => s.IsActive)
                 .ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
+            var notDealing = _isDealing.Select(d => !d);
+            IsDealing = _isDealing.ToReadOnlyReactiveProperty().AddTo(_disposables);
 
-            ToggleSelectCommand = new ReactiveCommand<int>(notShowcasing, initialCanExecute: true).AddTo(_disposables);
+            var notBusy = notShowcasing.CombineLatest(notDealing, (a, b) => a && b);
+
+            ToggleSelectCommand = new ReactiveCommand<int>(notBusy, initialCanExecute: true).AddTo(_disposables);
 
             var canSubmit = hand.SelectedIndices
                 .Select(indices => indices.Count >= 1 && indices.Count <= 5)
-                .CombineLatest(notShowcasing, (hasSelection, notShowing) => hasSelection && notShowing);
+                .CombineLatest(notBusy, (hasSelection, free) => hasSelection && free);
             CanSubmit = canSubmit.ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
             SubmitCommand = new ReactiveCommand(canSubmit, initialCanExecute: false).AddTo(_disposables);
-
-            var canDraw = hand.Cards
-                .Select(cards => cards.Count < hand.MaxHandSize)
-                .CombineLatest(notShowcasing, (canD, notShowing) => canD && notShowing);
-            CanDraw = canDraw.ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
-            DrawCommand = new ReactiveCommand(canDraw, initialCanExecute: false).AddTo(_disposables);
 
             DiscardCommand = new ReactiveCommand(canSubmit, initialCanExecute: false).AddTo(_disposables);
         }
@@ -78,6 +77,16 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         public void EndShowcase()
         {
             _showcase.Value = ShowcaseState.Inactive;
+        }
+
+        public void BeginDealing()
+        {
+            _isDealing.Value = true;
+        }
+
+        public void EndDealing()
+        {
+            _isDealing.Value = false;
         }
 
         private static string ToDisplayString(HandRank rank) => rank switch

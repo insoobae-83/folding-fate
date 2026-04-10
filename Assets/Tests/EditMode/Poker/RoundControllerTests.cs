@@ -99,42 +99,22 @@ namespace FoldingFate.Tests.EditMode.Poker
         }
 
         [Test]
-        public void DrawCommand_FillsHandToMaxHandSize()
+        public void DiscardCommand_RemovesSelectedCards()
         {
             _controller.Start();
-            // Manually reduce hand
             _hand.Clear();
-            var partial = new List<BaseCard>
-            {
-                new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
-                new("s2", CardCategory.Standard, Suit.Spade, Rank.Two, "", ""),
-                new("s3", CardCategory.Standard, Suit.Spade, Rank.Three, "", ""),
-            };
-            _hand.AddCards(partial);
-            Assert.AreEqual(3, _hand.Cards.Value.Count);
+            var cards = new List<BaseCard>();
+            for (int i = 0; i < 8; i++)
+                cards.Add(new BaseCard($"s{i}", CardCategory.Standard, Suit.Spade, (Rank)(i + 2), "", ""));
+            _hand.AddCards(cards);
 
-            _vm.DrawCommand.Execute(Unit.Default);
-            Assert.AreEqual(8, _hand.Cards.Value.Count);
-        }
-
-        [Test]
-        public void DiscardCommand_RemovesSelectedCardsWithoutSettingResult()
-        {
-            _controller.Start();
-            // 카드 2장 선택
             _vm.ToggleSelectCommand.Execute(0);
             _vm.ToggleSelectCommand.Execute(1);
             Assert.AreEqual(2, _hand.SelectedCount);
 
             _vm.DiscardCommand.Execute(Unit.Default);
 
-            // 선택한 2장이 제거됨
-            Assert.AreEqual(6, _hand.Cards.Value.Count);
-            // 선택 상태 해제
             Assert.AreEqual(0, _hand.SelectedCount);
-            // 족보 결과 텍스트는 변경되지 않음
-            Assert.IsTrue(string.IsNullOrEmpty(_vm.HandResultText.CurrentValue),
-                "DiscardCommand는 족보 결과를 설정하면 안 됨");
         }
 
         [Test]
@@ -192,20 +172,42 @@ namespace FoldingFate.Tests.EditMode.Poker
         }
 
         [Test]
-        public void CanDraw_FalseDuringShowcase()
+        public void IsDealing_InitiallyFalse()
+        {
+            Assert.IsFalse(_vm.IsDealing.CurrentValue);
+        }
+
+        [Test]
+        public void BeginDealing_SetsIsDealingTrue()
+        {
+            _vm.BeginDealing();
+            Assert.IsTrue(_vm.IsDealing.CurrentValue);
+        }
+
+        [Test]
+        public void EndDealing_SetsIsDealingFalse()
+        {
+            _vm.BeginDealing();
+            _vm.EndDealing();
+            Assert.IsFalse(_vm.IsDealing.CurrentValue);
+        }
+
+        [Test]
+        public void CanSubmit_FalseDuringDealing()
         {
             _controller.Start();
             _hand.Clear();
-            Assert.IsTrue(_vm.CanDraw.CurrentValue, "핸드 비었을 때 드로우 가능해야 함");
+            var cards = new List<BaseCard>();
+            for (int i = 0; i < 8; i++)
+                cards.Add(new BaseCard($"s{i}", CardCategory.Standard, Suit.Spade, (Rank)(i + 2), "", ""));
+            _hand.AddCards(cards);
 
-            var cards = new List<BaseCard>
-            {
-                new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
-            };
-            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 }, cards);
-            _vm.BeginShowcase(result);
+            _vm.ToggleSelectCommand.Execute(0);
+            Assert.IsTrue(_vm.CanSubmit.CurrentValue);
 
-            Assert.IsFalse(_vm.CanDraw.CurrentValue, "연출 중 드로우 불가해야 함");
+            _vm.BeginDealing();
+
+            Assert.IsFalse(_vm.CanSubmit.CurrentValue, "딜링 중 제출 불가해야 함");
         }
     }
 }

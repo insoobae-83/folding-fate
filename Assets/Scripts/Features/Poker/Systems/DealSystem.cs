@@ -52,5 +52,17 @@ namespace FoldingFate.Features.Poker.Systems
             var drawn = _deck.Draw(needed);
             _hand.AddCards(drawn);
         }
+
+        public void DrawOne()
+        {
+            if (_hand.IsFull) return;
+            var drawn = _deck.Draw(1);
+            _hand.AddCards(drawn);
+        }
+
+        public int CardsNeeded()
+        {
+            return _hand.MaxHandSize - _hand.Cards.Value.Count;
+        }
     }
 }

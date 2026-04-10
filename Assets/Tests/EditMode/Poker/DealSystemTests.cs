@@ -131,5 +131,37 @@ namespace FoldingFate.Tests.EditMode.Poker
             Assert.AreEqual(5, _hand.Cards.Value.Count);
             Assert.AreEqual(0, _hand.SelectedCount);
         }
+
+        [Test]
+        public void DrawOne_AddsOneCardToHand()
+        {
+            Assert.AreEqual(0, _hand.Cards.Value.Count);
+            _system.DrawOne();
+            Assert.AreEqual(1, _hand.Cards.Value.Count);
+            Assert.AreEqual(51, _deck.RemainingCount.Value);
+        }
+
+        [Test]
+        public void DrawOne_DoesNothingWhenHandIsFull()
+        {
+            _system.DrawToFull();
+            Assert.AreEqual(8, _hand.Cards.Value.Count);
+            int deckBefore = _deck.RemainingCount.Value;
+
+            _system.DrawOne();
+
+            Assert.AreEqual(8, _hand.Cards.Value.Count);
+            Assert.AreEqual(deckBefore, _deck.RemainingCount.Value);
+        }
+
+        [Test]
+        public void CardsNeeded_ReturnsCorrectCount()
+        {
+            Assert.AreEqual(8, _system.CardsNeeded());
+            _system.Deal(3);
+            Assert.AreEqual(5, _system.CardsNeeded());
+            _system.DrawToFull();
+            Assert.AreEqual(0, _system.CardsNeeded());
+        }
     }
 }
