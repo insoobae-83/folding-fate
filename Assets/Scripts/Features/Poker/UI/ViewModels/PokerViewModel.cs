@@ -10,7 +10,7 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
     public class PokerViewModel : IDisposable
     {
         private readonly CompositeDisposable _disposables = new();
-        private readonly ReactiveProperty<string> _handResultText = new(string.Empty);
+        private readonly ReactiveProperty<string> _handResultText;
 
         public ReadOnlyReactiveProperty<IReadOnlyList<BaseCard>> Hand { get; }
         public ReadOnlyReactiveProperty<IReadOnlyList<int>> SelectedIndices { get; }
@@ -23,6 +23,7 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
 
         public PokerViewModel(HandModel hand, DeckModel deck)
         {
+            _handResultText = new ReactiveProperty<string>(string.Empty).AddTo(_disposables);
             Hand = hand.Cards.ToReadOnlyReactiveProperty().AddTo(_disposables);
             SelectedIndices = hand.SelectedIndices.ToReadOnlyReactiveProperty().AddTo(_disposables);
             DeckRemaining = deck.RemainingCount.ToReadOnlyReactiveProperty().AddTo(_disposables);
