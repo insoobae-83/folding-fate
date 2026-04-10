@@ -141,6 +141,20 @@
     border-color: rgb(218, 165, 32);
 }
 
+.showcase-card--dimmed {
+    width: 80px;
+    height: 120px;
+    background-color: white;
+    border-radius: 8px;
+    margin: 0 4px;
+    padding: 6px;
+    align-items: center;
+    position: relative;
+    border-width: 2px;
+    border-color: rgb(180, 180, 180);
+    opacity: 0.6;
+}
+
 .showcase-rank-text {
     color: rgb(218, 165, 32);
     font-size: 24px;

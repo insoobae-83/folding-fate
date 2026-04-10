@@ -130,7 +130,7 @@ namespace FoldingFate.Features.Poker.UI.Views
 
                 foreach (var card in state.Cards)
                 {
-                    var cardEl = CreateShowcaseCardElement(card);
+                    var cardEl = CreateShowcaseCardElement(card, state.IsHighlighted(card));
                     cardsRow.Add(cardEl);
                 }
 
@@ -148,10 +148,10 @@ namespace FoldingFate.Features.Poker.UI.Views
             }
         }
 
-        private VisualElement CreateShowcaseCardElement(BaseCard card)
+        private VisualElement CreateShowcaseCardElement(BaseCard card, bool isHighlighted)
         {
             var el = new VisualElement();
-            el.AddToClassList("showcase-card");
+            el.AddToClassList(isHighlighted ? "showcase-card" : "showcase-card--dimmed");
 
             bool isRed = card.Suit == Suit.Heart || card.Suit == Suit.Diamond;
             el.AddToClassList(isRed ? "card--red" : "card--black");
