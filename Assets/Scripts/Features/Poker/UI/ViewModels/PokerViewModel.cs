@@ -67,9 +67,11 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
 
         public void BeginShowcase(HandResult result)
         {
+            var highlighted = new HashSet<BaseCard>(result.ContributingCards);
             _showcase.Value = new ShowcaseState(
                 true,
                 result.BestHand,
+                highlighted,
                 ToDisplayString(result.Rank));
         }
 
