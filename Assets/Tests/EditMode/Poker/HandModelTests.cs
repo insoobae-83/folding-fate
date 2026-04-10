@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using FoldingFate.Core;
@@ -91,6 +92,23 @@ namespace FoldingFate.Tests.EditMode.Poker
             Assert.AreEqual(1, indices[0]);
             Assert.AreEqual(3, indices[1]);
             Assert.AreEqual(4, indices[2]);
+        }
+
+        [Test]
+        public void Cards_Value_IsSnapshotIsolatedFromInternalState()
+        {
+            _hand.AddCards(new List<BaseCard> { MakeCard(Suit.Spade, Rank.Ace) });
+            var snapshot = _hand.Cards.Value;
+            _hand.Clear();
+            Assert.AreEqual(1, snapshot.Count, "Snapshot should not be affected by subsequent Clear()");
+        }
+
+        [Test]
+        public void ToggleSelect_WithOutOfRangeIndex_Throws()
+        {
+            _hand.AddCards(new List<BaseCard> { MakeCard(Suit.Spade, Rank.Ace) });
+            Assert.Throws<ArgumentOutOfRangeException>(() => _hand.ToggleSelect(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _hand.ToggleSelect(1));
         }
     }
 }

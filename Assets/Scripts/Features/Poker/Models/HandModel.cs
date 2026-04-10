@@ -16,6 +16,7 @@ namespace FoldingFate.Features.Poker.Models
         public ReactiveProperty<IReadOnlyList<int>> SelectedIndices { get; } = new(new List<int>());
 
         public int SelectedCount => _selectedIndices.Count;
+        /// <summary>Advisory: returns true when card count has reached MaxHandSize. Size enforcement is the caller's responsibility.</summary>
         public bool IsFull => _cards.Count >= MaxHandSize;
 
         public HandModel(int maxHandSize = 8)
@@ -31,6 +32,9 @@ namespace FoldingFate.Features.Poker.Models
 
         public void ToggleSelect(int index)
         {
+            if (index < 0 || index >= _cards.Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
             if (_selectedIndices.Contains(index))
                 _selectedIndices.Remove(index);
             else
