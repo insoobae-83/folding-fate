@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VContainer;
 using FoldingFate.Core;
 using FoldingFate.Features.Card.Models;
+using FoldingFate.Features.Poker.Data;
 using FoldingFate.Features.Poker.Models;
 using FoldingFate.Features.Poker.UI.ViewModels;
 
@@ -14,6 +16,7 @@ namespace FoldingFate.Features.Poker.UI.Views
     public class PokerView : MonoBehaviour
     {
         [Inject] private PokerViewModel _vm;
+        [Inject] private PokerConfig _config;
 
         private UIDocument _doc;
         private VisualElement _handContainer;
@@ -23,6 +26,7 @@ namespace FoldingFate.Features.Poker.UI.Views
         private Button _discardButton;
         private VisualElement _showcaseContainer;
         private VisualElement _pokerRoot;
+        private VisualElement _deckStack;
 
         private readonly List<VisualElement> _cardElements = new();
         private readonly List<VisualElement> _cardOverlays = new();
@@ -42,6 +46,7 @@ namespace FoldingFate.Features.Poker.UI.Views
             _deckCountLabel = root.Q<Label>("deck-count-label");
             _submitButton = root.Q<Button>("submit-button");
             _discardButton = root.Q<Button>("discard-button");
+            _deckStack = root.Q("deck-stack");
 
             _submitButton.clicked += () => _vm.SubmitCommand.Execute(Unit.Default);
             _discardButton.clicked += () => _vm.DiscardCommand.Execute(Unit.Default);
@@ -58,6 +63,9 @@ namespace FoldingFate.Features.Poker.UI.Views
 
         private void RenderHand(IReadOnlyList<BaseCard> cards)
         {
+            int prevCount = _cardElements.Count;
+            bool isDealing = _vm.IsDealing.CurrentValue;
+
             _handContainer.Clear();
             _cardElements.Clear();
             _cardOverlays.Clear();
@@ -67,10 +75,43 @@ namespace FoldingFate.Features.Poker.UI.Views
                 int capturedIndex = i;
                 var card = cards[i];
                 var (cardEl, overlay) = CreateCardElement(card, capturedIndex);
+
+                if (isDealing && i >= prevCount)
+                {
+                    AnimateDealCard(cardEl).Forget();
+                }
+
                 _handContainer.Add(cardEl);
                 _cardElements.Add(cardEl);
                 _cardOverlays.Add(overlay);
             }
+        }
+
+        private async UniTaskVoid AnimateDealCard(VisualElement cardEl)
+        {
+            if (_deckStack == null) return;
+
+            var deckRect = _deckStack.worldBound;
+            var handRect = _handContainer.worldBound;
+
+            float offsetX = deckRect.x - handRect.x - (_cardElements.Count - 1) * 88f;
+            float offsetY = deckRect.y - handRect.y;
+
+            cardEl.style.translate = new Translate(offsetX, offsetY);
+            cardEl.AddToClassList("card--dealing");
+
+            await UniTask.Yield(PlayerLoopTiming.Update, this.destroyCancellationToken);
+
+            cardEl.style.transitionDuration = new List<TimeValue> { new(
+                _config.DealAnimationDurationSeconds, TimeUnit.Second) };
+            cardEl.style.translate = new Translate(0, 0);
+
+            await UniTask.Delay(
+                System.TimeSpan.FromSeconds(_config.DealAnimationDurationSeconds),
+                cancellationToken: this.destroyCancellationToken);
+
+            cardEl.RemoveFromClassList("card--dealing");
+            cardEl.style.transitionDuration = StyleKeyword.Null;
         }
 
         private (VisualElement card, VisualElement overlay) CreateCardElement(BaseCard card, int index)
