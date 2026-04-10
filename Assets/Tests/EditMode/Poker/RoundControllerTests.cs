@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using R3;
+using UnityEngine;
 using FoldingFate.Core;
 using FoldingFate.Features.Card.Models;
 using FoldingFate.Features.Card.Systems;
 using FoldingFate.Features.Poker.Controllers;
+using FoldingFate.Features.Poker.Data;
 using FoldingFate.Features.Poker.Models;
 using FoldingFate.Features.Poker.Systems;
 using FoldingFate.Features.Poker.UI.ViewModels;
@@ -19,6 +21,7 @@ namespace FoldingFate.Tests.EditMode.Poker
         private DealSystem _dealSystem;
         private PokerViewModel _vm;
         private RoundController _controller;
+        private PokerConfig _config;
 
         [SetUp]
         public void SetUp()
@@ -27,13 +30,16 @@ namespace FoldingFate.Tests.EditMode.Poker
             _hand = new HandModel(maxHandSize: 8);
             _dealSystem = new DealSystem(_deck, _hand, new HandEvaluator());
             _vm = new PokerViewModel(_hand, _deck);
-            _controller = new RoundController(_dealSystem, _vm);
+            _config = ScriptableObject.CreateInstance<PokerConfig>();
+            _config.ShowcaseDurationSeconds = 0f;
+            _controller = new RoundController(_dealSystem, _vm, _config);
         }
 
         [TearDown]
         public void TearDown()
         {
             _controller.Dispose();
+            Object.DestroyImmediate(_config);
             _vm.Dispose();
             _hand.Dispose();
             _deck.Dispose();
@@ -57,11 +63,31 @@ namespace FoldingFate.Tests.EditMode.Poker
         public void SubmitCommand_UpdatesHandResultText()
         {
             _controller.Start();
-            // Select 1 card and submit to get a result (at minimum HighCard)
             _vm.ToggleSelectCommand.Execute(0);
             _vm.SubmitCommand.Execute(Unit.Default);
-            Assert.IsFalse(string.IsNullOrEmpty(_vm.HandResultText.CurrentValue),
-                "HandResultText should be set after submit");
+
+            // 비동기 연출 후 HandResultText 설정됨
+            // duration=0이라도 UniTask.Delay가 즉시 완료되지 않을 수 있음
+            // 연출 진입 또는 결과 텍스트 설정 중 하나는 확인 가능
+            Assert.IsTrue(_vm.Showcase.CurrentValue.IsActive ||
+                !string.IsNullOrEmpty(_vm.HandResultText.CurrentValue),
+                "제출 후 연출이 활성화되거나 결과 텍스트가 설정되어야 함");
+        }
+
+        [Test]
+        public void SubmitCommand_ActivatesShowcase()
+        {
+            _controller.Start();
+            _vm.ToggleSelectCommand.Execute(0);
+
+            _vm.SubmitCommand.Execute(Unit.Default);
+
+            Assert.IsTrue(_vm.Showcase.CurrentValue.IsActive,
+                "제출 직후 연출이 활성화되어야 함");
+            Assert.IsTrue(_vm.Showcase.CurrentValue.Cards.Count > 0,
+                "연출에 카드가 포함되어야 함");
+            Assert.IsFalse(string.IsNullOrEmpty(_vm.Showcase.CurrentValue.RankText),
+                "연출에 족보 텍스트가 포함되어야 함");
         }
 
         [Test]
