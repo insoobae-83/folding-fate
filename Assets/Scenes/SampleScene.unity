@@ -465,6 +465,7 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
+  _pokerConfig: {fileID: 11400000, guid: e03ab5b84b7f24e83a32a65be091fb3e, type: 2}
 --- !u!4 &1307381701
 Transform:
   m_ObjectHideFlags: 0
