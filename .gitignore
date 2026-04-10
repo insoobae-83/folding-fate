@@ -34,6 +34,12 @@
 # Visual Studio cache directory
 .vs/
 
+# VS Code
+.vscode/
+
+# Visual Studio / Rider solution files
+*.slnx
+
 # Gradle cache directory
 .gradle/
 
