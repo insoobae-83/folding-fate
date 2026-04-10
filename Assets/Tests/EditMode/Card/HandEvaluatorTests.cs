@@ -359,6 +359,164 @@ namespace FoldingFate.Tests.EditMode.Card
         }
 
         [Test]
+        public void HandResult_ContributingCards_StoresProvidedCards()
+        {
+            var card1 = S(Suit.Spade, Rank.Ace);
+            var card2 = S(Suit.Heart, Rank.Ace);
+            var allCards = new List<BaseCard> { card1, card2, S(Suit.Diamond, Rank.Three) };
+            var contributing = new List<BaseCard> { card1, card2 };
+            var result = new HandResult(HandRank.OnePair, allCards, new List<int> { 14 }, contributing);
+            Assert.AreEqual(2, result.ContributingCards.Count);
+            Assert.Contains(card1, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(card2, (System.Collections.ICollection)result.ContributingCards);
+        }
+
+        [Test]
+        public void Evaluate_HighCard_ContributingCardsIsHighestCard()
+        {
+            var king = S(Suit.Spade, Rank.King);
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Two), S(Suit.Heart, Rank.Four),
+                S(Suit.Diamond, Rank.Seven), S(Suit.Club, Rank.Nine), king
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(1, result.ContributingCards.Count);
+            Assert.AreEqual(king, result.ContributingCards[0]);
+        }
+
+        [Test]
+        public void Evaluate_OnePair_ContributingCardsIsPairOnly()
+        {
+            var kingS = S(Suit.Spade, Rank.King);
+            var kingH = S(Suit.Heart, Rank.King);
+            var cards = new List<BaseCard>
+            {
+                kingS, kingH, S(Suit.Diamond, Rank.Three),
+                S(Suit.Club, Rank.Seven), S(Suit.Spade, Rank.Ace)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(2, result.ContributingCards.Count);
+            Assert.Contains(kingS, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(kingH, (System.Collections.ICollection)result.ContributingCards);
+        }
+
+        [Test]
+        public void Evaluate_TwoPair_ContributingCardsIsBothPairs()
+        {
+            var kingS = S(Suit.Spade, Rank.King);
+            var kingH = S(Suit.Heart, Rank.King);
+            var threeD = S(Suit.Diamond, Rank.Three);
+            var threeC = S(Suit.Club, Rank.Three);
+            var cards = new List<BaseCard>
+            {
+                kingS, kingH, threeD, threeC, S(Suit.Spade, Rank.Ace)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(4, result.ContributingCards.Count);
+            Assert.Contains(kingS, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(kingH, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(threeD, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(threeC, (System.Collections.ICollection)result.ContributingCards);
+        }
+
+        [Test]
+        public void Evaluate_ThreeOfAKind_ContributingCardsIsTripleOnly()
+        {
+            var qS = S(Suit.Spade, Rank.Queen);
+            var qH = S(Suit.Heart, Rank.Queen);
+            var qD = S(Suit.Diamond, Rank.Queen);
+            var cards = new List<BaseCard>
+            {
+                qS, qH, qD, S(Suit.Club, Rank.Two), S(Suit.Spade, Rank.Five)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(3, result.ContributingCards.Count);
+            Assert.Contains(qS, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(qH, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(qD, (System.Collections.ICollection)result.ContributingCards);
+        }
+
+        [Test]
+        public void Evaluate_FourOfAKind_ContributingCardsIsQuadOnly()
+        {
+            var jS = S(Suit.Spade, Rank.Jack);
+            var jH = S(Suit.Heart, Rank.Jack);
+            var jD = S(Suit.Diamond, Rank.Jack);
+            var jC = S(Suit.Club, Rank.Jack);
+            var cards = new List<BaseCard>
+            {
+                jS, jH, jD, jC, S(Suit.Spade, Rank.Three)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(4, result.ContributingCards.Count);
+            Assert.Contains(jS, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(jH, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(jD, (System.Collections.ICollection)result.ContributingCards);
+            Assert.Contains(jC, (System.Collections.ICollection)result.ContributingCards);
+        }
+
+        [Test]
+        public void Evaluate_Straight_ContributingCardsIsAll()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.Five), S(Suit.Heart, Rank.Six),
+                S(Suit.Diamond, Rank.Seven), S(Suit.Club, Rank.Eight), S(Suit.Spade, Rank.Nine)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(5, result.ContributingCards.Count);
+        }
+
+        [Test]
+        public void Evaluate_Flush_ContributingCardsIsAll()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Heart, Rank.Two), S(Suit.Heart, Rank.Five),
+                S(Suit.Heart, Rank.Seven), S(Suit.Heart, Rank.Nine), S(Suit.Heart, Rank.King)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(5, result.ContributingCards.Count);
+        }
+
+        [Test]
+        public void Evaluate_FullHouse_ContributingCardsIsAll()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Spade, Rank.King), S(Suit.Heart, Rank.King),
+                S(Suit.Diamond, Rank.King), S(Suit.Club, Rank.Ace), S(Suit.Spade, Rank.Ace)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(5, result.ContributingCards.Count);
+        }
+
+        [Test]
+        public void Evaluate_StraightFlush_ContributingCardsIsAll()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Diamond, Rank.Five), S(Suit.Diamond, Rank.Six),
+                S(Suit.Diamond, Rank.Seven), S(Suit.Diamond, Rank.Eight), S(Suit.Diamond, Rank.Nine)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(5, result.ContributingCards.Count);
+        }
+
+        [Test]
+        public void Evaluate_RoyalFlush_ContributingCardsIsAll()
+        {
+            var cards = new List<BaseCard>
+            {
+                S(Suit.Club, Rank.Ten), S(Suit.Club, Rank.Jack),
+                S(Suit.Club, Rank.Queen), S(Suit.Club, Rank.King), S(Suit.Club, Rank.Ace)
+            };
+            var result = _evaluator.Evaluate(cards);
+            Assert.AreEqual(5, result.ContributingCards.Count);
+        }
+
+        [Test]
         public void Compare_IdenticalHands_ReturnsZero()
         {
             var hand1 = _evaluator.Evaluate(new List<BaseCard>

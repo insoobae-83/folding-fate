@@ -22,7 +22,7 @@ namespace FoldingFate.Features.Card.Systems
             }
 
             if (standard.Count == 0 && jokerCount == 0)
-                return new HandResult(HandRank.HighCard, new List<BaseCard>(), new List<int> { 0 });
+                return new HandResult(HandRank.HighCard, new List<BaseCard>(), new List<int> { 0 }, new List<BaseCard>());
 
             if (standard.Count <= 5)
                 return EvaluateBest(standard, jokerCount);
@@ -59,7 +59,12 @@ namespace FoldingFate.Features.Card.Systems
                 .Select(c => AceHighValue(c.Rank.Value))
                 .OrderByDescending(v => v)
                 .ToList();
-            return new HandResult(HandRank.HighCard, cards.ToList(), tiebreak);
+            var contributing = cards
+                .Where(c => c.Rank.HasValue)
+                .OrderByDescending(c => AceHighValue(c.Rank.Value))
+                .Take(1)
+                .ToList();
+            return new HandResult(HandRank.HighCard, cards.ToList(), tiebreak, contributing);
         }
 
         private static int AceHighValue(Rank rank) =>
@@ -90,7 +95,8 @@ namespace FoldingFate.Features.Card.Systems
                                     .OrderByDescending(kv => kv.Key).Take(3).Select(kv => kv.Key).ToList();
                 var tiebreak = new List<int> { pairRank };
                 tiebreak.AddRange(kickers);
-                result = new HandResult(HandRank.OnePair, cards.ToList(), tiebreak);
+                var contributing = cards.Where(c => c.Rank.HasValue && AceHighValue(c.Rank.Value) == pairRank).ToList();
+                result = new HandResult(HandRank.OnePair, cards.ToList(), tiebreak, contributing);
                 return true;
             }
             // 1+ joker: pair the highest rank card
@@ -100,7 +106,8 @@ namespace FoldingFate.Features.Card.Systems
                 var kickers = counts.Keys.Where(k => k != bestRank).OrderByDescending(k => k).Take(3).ToList();
                 var tiebreak = new List<int> { bestRank };
                 tiebreak.AddRange(kickers);
-                result = new HandResult(HandRank.OnePair, cards.ToList(), tiebreak);
+                var contributing = cards.Where(c => c.Rank.HasValue && AceHighValue(c.Rank.Value) == bestRank).ToList();
+                result = new HandResult(HandRank.OnePair, cards.ToList(), tiebreak, contributing);
                 return true;
             }
             return false;
@@ -118,7 +125,9 @@ namespace FoldingFate.Features.Card.Systems
                 int lowPair = pairs[1].Key;
                 int kicker = counts.Where(kv => kv.Key != highPair && kv.Key != lowPair)
                                    .OrderByDescending(kv => kv.Key).Select(kv => kv.Key).FirstOrDefault();
-                result = new HandResult(HandRank.TwoPair, cards.ToList(), new List<int> { highPair, lowPair, kicker });
+                var contributing = cards.Where(c => c.Rank.HasValue &&
+                    (AceHighValue(c.Rank.Value) == highPair || AceHighValue(c.Rank.Value) == lowPair)).ToList();
+                result = new HandResult(HandRank.TwoPair, cards.ToList(), new List<int> { highPair, lowPair, kicker }, contributing);
                 return true;
             }
             // 1 joker + 1 pair → use joker to make second pair from highest single
@@ -131,7 +140,9 @@ namespace FoldingFate.Features.Card.Systems
                 {
                     int high = Math.Max(existingPair, secondPairRank);
                     int low = Math.Min(existingPair, secondPairRank);
-                    result = new HandResult(HandRank.TwoPair, cards.ToList(), new List<int> { high, low, 0 });
+                    var contributing = cards.Where(c => c.Rank.HasValue &&
+                        (AceHighValue(c.Rank.Value) == high || AceHighValue(c.Rank.Value) == low)).ToList();
+                    result = new HandResult(HandRank.TwoPair, cards.ToList(), new List<int> { high, low, 0 }, contributing);
                     return true;
                 }
             }
@@ -146,7 +157,7 @@ namespace FoldingFate.Features.Card.Systems
             {
                 if (jokerCount >= 4)
                 {
-                    result = new HandResult(HandRank.FourOfAKind, new List<BaseCard>(), new List<int> { 14, 0 });
+                    result = new HandResult(HandRank.FourOfAKind, new List<BaseCard>(), new List<int> { 14, 0 }, new List<BaseCard>());
                     return true;
                 }
                 return false;
@@ -163,7 +174,8 @@ namespace FoldingFate.Features.Card.Systems
                         .OrderByDescending(k => k.Key)
                         .Select(k => k.Key)
                         .FirstOrDefault();
-                    result = new HandResult(HandRank.FourOfAKind, cards.ToList(), new List<int> { quadRank, kicker });
+                    var contributing = cards.Where(c => c.Rank.HasValue && AceHighValue(c.Rank.Value) == quadRank).ToList();
+                    result = new HandResult(HandRank.FourOfAKind, cards.ToList(), new List<int> { quadRank, kicker }, contributing);
                     return true;
                 }
             }
@@ -200,7 +212,7 @@ namespace FoldingFate.Features.Card.Systems
                 if (needed <= jokersLeft)
                 {
                     result = new HandResult(HandRank.FullHouse, cards.ToList(),
-                        new List<int> { tripleRank, kv.Key });
+                        new List<int> { tripleRank, kv.Key }, cards.ToList());
                     return true;
                 }
             }
@@ -209,7 +221,7 @@ namespace FoldingFate.Features.Card.Systems
             {
                 int pairRank = sorted.Where(kv => kv.Key != tripleRank).Select(kv => kv.Key).FirstOrDefault();
                 if (pairRank == 0) pairRank = 14;
-                result = new HandResult(HandRank.FullHouse, cards.ToList(), new List<int> { tripleRank, pairRank });
+                result = new HandResult(HandRank.FullHouse, cards.ToList(), new List<int> { tripleRank, pairRank }, cards.ToList());
                 return true;
             }
             return false;
@@ -230,7 +242,7 @@ namespace FoldingFate.Features.Card.Systems
                     if (!values.Contains(top - i)) needed++;
                 if (needed <= jokerCount)
                 {
-                    result = new HandResult(HandRank.Straight, cards.ToList(), new List<int> { top });
+                    result = new HandResult(HandRank.Straight, cards.ToList(), new List<int> { top }, cards.ToList());
                     return true;
                 }
             }
@@ -255,7 +267,8 @@ namespace FoldingFate.Features.Card.Systems
                         .ToList();
                     var tiebreak = new List<int> { tripleRank };
                     tiebreak.AddRange(kickers);
-                    result = new HandResult(HandRank.ThreeOfAKind, cards.ToList(), tiebreak);
+                    var contributing = cards.Where(c => c.Rank.HasValue && AceHighValue(c.Rank.Value) == tripleRank).ToList();
+                    result = new HandResult(HandRank.ThreeOfAKind, cards.ToList(), tiebreak, contributing);
                     return true;
                 }
             }
@@ -288,13 +301,13 @@ namespace FoldingFate.Features.Card.Systems
                     .ToList();
                 if (matching.Count + jokerCount >= 5)
                 {
-                    result = new HandResult(HandRank.RoyalFlush, matching, new List<int> { 0 });
+                    result = new HandResult(HandRank.RoyalFlush, matching, new List<int> { 0 }, matching);
                     return true;
                 }
             }
             if (jokerCount >= 5)
             {
-                result = new HandResult(HandRank.RoyalFlush, new List<BaseCard>(), new List<int> { 0 });
+                result = new HandResult(HandRank.RoyalFlush, new List<BaseCard>(), new List<int> { 0 }, new List<BaseCard>());
                 return true;
             }
             return false;
@@ -332,7 +345,7 @@ namespace FoldingFate.Features.Card.Systems
 
             if (bestTop >= 0)
             {
-                result = new HandResult(HandRank.StraightFlush, bestSuitCards, new List<int> { bestTop });
+                result = new HandResult(HandRank.StraightFlush, bestSuitCards, new List<int> { bestTop }, bestSuitCards);
                 return true;
             }
             return false;
@@ -351,7 +364,7 @@ namespace FoldingFate.Features.Card.Systems
                 {
                     var top5 = suitCards.Take(5).ToList();
                     var tiebreak = top5.Select(c => AceHighValue(c.Rank.Value)).ToList();
-                    result = new HandResult(HandRank.Flush, top5, tiebreak);
+                    result = new HandResult(HandRank.Flush, top5, tiebreak, top5);
                     return true;
                 }
             }
