@@ -40,6 +40,9 @@
 # Git worktrees
 .worktrees/
 
+# Superpowers brainstorm sessions
+.superpowers/
+
 # Visual Studio / Rider solution files
 *.slnx
 
