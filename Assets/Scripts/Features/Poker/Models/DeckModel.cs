@@ -49,6 +49,9 @@ namespace FoldingFate.Features.Poker.Models
                 Initialize();
             }
 
+            if (_cards.Count < count)
+                throw new ArgumentOutOfRangeException(nameof(count), $"Cannot draw {count} cards; only {_cards.Count} available after reset.");
+
             var drawn = _cards.GetRange(0, count);
             _cards.RemoveRange(0, count);
             RemainingCount.Value = _cards.Count;
