@@ -229,6 +229,13 @@ Input is configured via `Assets/InputSystem_Actions.inputactions` using the new 
 - `Assets/TutorialInfo/` contains editor-only utility scripts (not game logic)
 - The project uses **Linear color space** (set in Player Settings)
 
+### Git Workflow
+
+- **main 브랜치에 직접 커밋 금지** — 모든 기능 구현/수정은 반드시 피처 브랜치에서 작업
+- 작업 시작 시(코드 변경 전) 워크트리를 생성하고 피처 브랜치에서 진행
+- 완료 후 main에 `--no-ff` 머지 (merge commit 생성)
+- spec/plan 문서 커밋도 피처 브랜치에서 수행
+
 ### Unity .meta 파일 관리
 
 - Unity가 생성하는 `.meta` 파일은 **반드시 git에 커밋**해야 한다 — GUID와 import 설정을 담고 있어 누락 시 에셋 참조가 깨짐
