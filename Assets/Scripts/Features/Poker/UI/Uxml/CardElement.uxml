@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="card-root" class="card">
+        <ui:Label name="card-top-rank" class="card-rank card-rank--top" />
+        <ui:Label name="card-suit" class="card-suit card-suit--top" />
+        <ui:Label name="card-center-suit" class="card-center-suit" />
+        <ui:VisualElement name="selected-overlay" class="card-selected-overlay" />
+    </ui:VisualElement>
+</ui:UXML>
