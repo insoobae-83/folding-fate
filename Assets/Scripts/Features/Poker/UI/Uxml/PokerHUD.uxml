@@ -7,6 +7,7 @@
         <ui:Label name="result-label" class="result-label" text="" />
         <ui:VisualElement class="button-row">
             <ui:Button name="submit-button" class="action-button" text="제출" />
+            <ui:Button name="discard-button" class="action-button" text="버리기" />
             <ui:Button name="draw-button" class="action-button" text="다시 받기" />
         </ui:VisualElement>
     </ui:VisualElement>

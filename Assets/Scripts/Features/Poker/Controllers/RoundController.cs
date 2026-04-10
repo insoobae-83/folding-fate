@@ -39,6 +39,10 @@ namespace FoldingFate.Features.Poker.Controllers
             _vm.DrawCommand
                 .Subscribe(_ => _dealSystem.DrawToFull())
                 .AddTo(_disposables);
+
+            _vm.DiscardCommand
+                .Subscribe(_ => _dealSystem.DiscardSelected())
+                .AddTo(_disposables);
         }
 
         public void Dispose() => _disposables.Dispose();

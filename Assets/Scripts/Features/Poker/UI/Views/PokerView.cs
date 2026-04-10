@@ -20,6 +20,7 @@ namespace FoldingFate.Features.Poker.UI.Views
         private Label _deckCountLabel;
         private Button _submitButton;
         private Button _drawButton;
+        private Button _discardButton;
 
         private readonly List<VisualElement> _cardElements = new();
 
@@ -36,9 +37,11 @@ namespace FoldingFate.Features.Poker.UI.Views
             _deckCountLabel = root.Q<Label>("deck-count-label");
             _submitButton = root.Q<Button>("submit-button");
             _drawButton = root.Q<Button>("draw-button");
+            _discardButton = root.Q<Button>("discard-button");
 
             _submitButton.clicked += () => _vm.SubmitCommand.Execute(Unit.Default);
             _drawButton.clicked += () => _vm.DrawCommand.Execute(Unit.Default);
+            _discardButton.clicked += () => _vm.DiscardCommand.Execute(Unit.Default);
 
             _vm.Hand.Subscribe(RenderHand).AddTo(this);
             _vm.SelectedIndices.Subscribe(UpdateSelectionVisuals).AddTo(this);
@@ -47,6 +50,7 @@ namespace FoldingFate.Features.Poker.UI.Views
 
             _vm.CanSubmit.Subscribe(v => _submitButton.SetEnabled(v)).AddTo(this);
             _vm.CanDraw.Subscribe(v => _drawButton.SetEnabled(v)).AddTo(this);
+            _vm.CanSubmit.Subscribe(v => _discardButton.SetEnabled(v)).AddTo(this);
         }
 
         private void RenderHand(IReadOnlyList<BaseCard> cards)

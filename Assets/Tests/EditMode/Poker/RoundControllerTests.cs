@@ -90,5 +90,25 @@ namespace FoldingFate.Tests.EditMode.Poker
             _vm.DrawCommand.Execute(Unit.Default);
             Assert.AreEqual(8, _hand.Cards.Value.Count);
         }
+
+        [Test]
+        public void DiscardCommand_RemovesSelectedCardsWithoutSettingResult()
+        {
+            _controller.Start();
+            // 카드 2장 선택
+            _vm.ToggleSelectCommand.Execute(0);
+            _vm.ToggleSelectCommand.Execute(1);
+            Assert.AreEqual(2, _hand.SelectedCount);
+
+            _vm.DiscardCommand.Execute(Unit.Default);
+
+            // 선택한 2장이 제거됨
+            Assert.AreEqual(6, _hand.Cards.Value.Count);
+            // 선택 상태 해제
+            Assert.AreEqual(0, _hand.SelectedCount);
+            // 족보 결과 텍스트는 변경되지 않음
+            Assert.IsTrue(string.IsNullOrEmpty(_vm.HandResultText.CurrentValue),
+                "DiscardCommand는 족보 결과를 설정하면 안 됨");
+        }
     }
 }
