@@ -8,14 +8,18 @@ namespace FoldingFate.Features.Card.Models
     {
         public HandRank Rank { get; }
         public IReadOnlyList<BaseCard> BestHand { get; }
+        public IReadOnlyList<BaseCard> ContributingCards { get; }
         private readonly IReadOnlyList<int> _tiebreakValues;
 
-        public HandResult(HandRank rank, List<BaseCard> bestHand, List<int> tiebreakValues)
+        public HandResult(HandRank rank, List<BaseCard> bestHand,
+                          List<int> tiebreakValues, List<BaseCard> contributingCards)
         {
             if (bestHand == null) throw new ArgumentNullException(nameof(bestHand));
             if (tiebreakValues == null) throw new ArgumentNullException(nameof(tiebreakValues));
+            if (contributingCards == null) throw new ArgumentNullException(nameof(contributingCards));
             Rank = rank;
             BestHand = bestHand.AsReadOnly();
+            ContributingCards = contributingCards.AsReadOnly();
             _tiebreakValues = tiebreakValues.AsReadOnly();
         }
 

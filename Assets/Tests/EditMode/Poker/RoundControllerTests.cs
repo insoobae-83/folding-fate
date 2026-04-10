@@ -150,7 +150,7 @@ namespace FoldingFate.Tests.EditMode.Poker
             {
                 new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
             };
-            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 }, cards);
 
             _vm.BeginShowcase(result);
 
@@ -166,7 +166,7 @@ namespace FoldingFate.Tests.EditMode.Poker
             {
                 new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
             };
-            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 }, cards);
 
             _vm.BeginShowcase(result);
             _vm.EndShowcase();
@@ -185,7 +185,7 @@ namespace FoldingFate.Tests.EditMode.Poker
             {
                 new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
             };
-            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 }, cards);
             _vm.BeginShowcase(result);
 
             Assert.IsFalse(_vm.CanSubmit.CurrentValue, "연출 중 제출 불가해야 함");
@@ -202,7 +202,7 @@ namespace FoldingFate.Tests.EditMode.Poker
             {
                 new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
             };
-            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 }, cards);
             _vm.BeginShowcase(result);
 
             Assert.IsFalse(_vm.CanDraw.CurrentValue, "연출 중 드로우 불가해야 함");
