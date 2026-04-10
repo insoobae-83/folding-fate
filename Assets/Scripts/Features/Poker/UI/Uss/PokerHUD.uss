@@ -33,7 +33,7 @@
     transition-duration: 0.15s;
     transition-property: translate;
     border-width: 3px;
-    border-color: white;
+    border-color: rgb(200, 200, 200);
 }
 
 .card--selected {
