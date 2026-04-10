@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using FoldingFate.Features.Poker.Models;
 
@@ -54,6 +55,12 @@ namespace FoldingFate.Tests.EditMode.Poker
                 if (drawn1[i].Id != drawn2[i].Id) { allSame = false; break; }
 
             Assert.IsFalse(allSame, "두 독립 셔플의 결과가 동일해서는 안 됩니다");
+        }
+
+        [Test]
+        public void Draw_WithCountExceedingDeckSize_ThrowsArgumentOutOfRangeException()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _deck.Draw(53));
         }
 
         [Test]

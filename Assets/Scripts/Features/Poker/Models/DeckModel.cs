@@ -6,7 +6,7 @@ using FoldingFate.Features.Card.Models;
 
 namespace FoldingFate.Features.Poker.Models
 {
-    public class DeckModel
+    public class DeckModel : IDisposable
     {
         private readonly List<BaseCard> _cards = new();
         private readonly Random _random = new();
@@ -33,13 +33,18 @@ namespace FoldingFate.Features.Poker.Models
             RemainingCount.Value = _cards.Count;
         }
 
-        public void Shuffle()
+        private void Shuffle()
         {
             for (int i = _cards.Count - 1; i > 0; i--)
             {
                 int j = _random.Next(i + 1);
                 (_cards[i], _cards[j]) = (_cards[j], _cards[i]);
             }
+        }
+
+        public void Dispose()
+        {
+            RemainingCount.Dispose();
         }
 
         public IReadOnlyList<BaseCard> Draw(int count)
