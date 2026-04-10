@@ -26,6 +26,7 @@ namespace FoldingFate.Features.Poker.UI.Views
         private VisualElement _pokerRoot;
 
         private readonly List<VisualElement> _cardElements = new();
+        private readonly List<VisualElement> _cardOverlays = new();
 
         private void Awake()
         {
@@ -63,19 +64,20 @@ namespace FoldingFate.Features.Poker.UI.Views
         {
             _handContainer.Clear();
             _cardElements.Clear();
+            _cardOverlays.Clear();
 
             for (int i = 0; i < cards.Count; i++)
             {
                 int capturedIndex = i;
                 var card = cards[i];
-                var cardEl = CreateCardElement(card, capturedIndex);
+                var (cardEl, overlay) = CreateCardElement(card, capturedIndex);
                 _handContainer.Add(cardEl);
                 _cardElements.Add(cardEl);
+                _cardOverlays.Add(overlay);
             }
-
         }
 
-        private VisualElement CreateCardElement(BaseCard card, int index)
+        private (VisualElement card, VisualElement overlay) CreateCardElement(BaseCard card, int index)
         {
             var el = new VisualElement();
             el.AddToClassList("card");
@@ -95,13 +97,17 @@ namespace FoldingFate.Features.Poker.UI.Views
             centerSuitLabel.AddToClassList("card-center-suit");
             centerSuitLabel.text = SuitToSymbol(card.Suit);
 
+            var overlay = new VisualElement();
+            overlay.AddToClassList("card-overlay");
+
             el.Add(rankLabel);
             el.Add(suitTopLabel);
             el.Add(centerSuitLabel);
+            el.Add(overlay);
 
             el.RegisterCallback<ClickEvent>(_ => _vm.ToggleSelectCommand.Execute(index));
 
-            return el;
+            return (el, overlay);
         }
 
         private void UpdateSelectionVisuals(IReadOnlyList<int> selectedIndices)
@@ -109,10 +115,17 @@ namespace FoldingFate.Features.Poker.UI.Views
             var selectedSet = new HashSet<int>(selectedIndices);
             for (int i = 0; i < _cardElements.Count; i++)
             {
-                if (selectedSet.Contains(i))
+                bool selected = selectedSet.Contains(i);
+                if (selected)
+                {
                     _cardElements[i].AddToClassList("card--selected");
+                    _cardOverlays[i].AddToClassList("card-overlay--selected");
+                }
                 else
+                {
                     _cardElements[i].RemoveFromClassList("card--selected");
+                    _cardOverlays[i].RemoveFromClassList("card-overlay--selected");
+                }
             }
         }
 
@@ -171,6 +184,13 @@ namespace FoldingFate.Features.Poker.UI.Views
             el.Add(rankLabel);
             el.Add(suitTopLabel);
             el.Add(centerSuitLabel);
+
+            if (isHighlighted)
+            {
+                var overlay = new VisualElement();
+                overlay.AddToClassList("showcase-overlay");
+                el.Add(overlay);
+            }
 
             return el;
         }
