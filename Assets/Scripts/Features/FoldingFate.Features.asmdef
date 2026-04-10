@@ -4,7 +4,8 @@
     "references": [
         "FoldingFate.Core",
         "R3.Unity",
-        "VContainer"
+        "VContainer",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
