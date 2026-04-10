@@ -102,3 +102,65 @@
 .action-button:disabled {
     opacity: 0.4;
 }
+
+/* === Showcase 연출 === */
+
+.showcase-container {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+    display: none;
+}
+
+.showcase-container--active {
+    opacity: 1;
+    display: flex;
+}
+
+.showcase-cards {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: nowrap;
+    margin-bottom: 8px;
+}
+
+.showcase-card {
+    width: 80px;
+    height: 120px;
+    background-color: white;
+    border-radius: 8px;
+    margin: 0 4px;
+    padding: 6px;
+    align-items: center;
+    position: relative;
+    border-width: 2px;
+    border-color: rgb(218, 165, 32);
+}
+
+.showcase-rank-text {
+    color: rgb(218, 165, 32);
+    font-size: 24px;
+    -unity-font-style: bold;
+}
+
+/* 연출 중 핸드/버튼 비활성화 */
+.poker-root--showcasing .hand-container {
+    opacity: 0.3;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.poker-root--showcasing .button-row {
+    opacity: 0.3;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.poker-root--showcasing .result-label {
+    opacity: 0.3;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
