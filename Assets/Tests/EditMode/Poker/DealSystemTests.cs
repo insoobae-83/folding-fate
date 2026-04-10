@@ -116,5 +116,20 @@ namespace FoldingFate.Tests.EditMode.Poker
             var result = _system.EvaluateSelected();
             Assert.AreEqual(HandRank.OnePair, result.Rank);
         }
+
+        [Test]
+        public void DiscardSelected_RemovesSelectedCardsFromHand()
+        {
+            _system.Deal(8);
+            _system.ToggleSelect(0);
+            _system.ToggleSelect(1);
+            _system.ToggleSelect(2);
+            Assert.AreEqual(3, _hand.SelectedCount);
+
+            _system.DiscardSelected();
+
+            Assert.AreEqual(5, _hand.Cards.Value.Count);
+            Assert.AreEqual(0, _hand.SelectedCount);
+        }
     }
 }

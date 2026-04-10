@@ -51,6 +51,16 @@ namespace FoldingFate.Features.Poker.Models
             SelectedIndices.Value = new List<int>();
         }
 
+        public void RemoveSelected()
+        {
+            var toRemove = _selectedIndices.OrderByDescending(i => i).ToList();
+            foreach (var i in toRemove)
+                _cards.RemoveAt(i);
+            _selectedIndices.Clear();
+            Cards.Value = _cards.ToList();
+            SelectedIndices.Value = new List<int>();
+        }
+
         public void Dispose()
         {
             Cards.Dispose();

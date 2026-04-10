@@ -43,6 +43,8 @@ namespace FoldingFate.Features.Poker.Systems
             return _evaluator.Evaluate(selectedCards);
         }
 
+        public void DiscardSelected() => _hand.RemoveSelected();
+
         public void DrawToFull()
         {
             int needed = _hand.MaxHandSize - _hand.Cards.Value.Count;

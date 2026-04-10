@@ -31,6 +31,7 @@ namespace FoldingFate.Features.Poker.Controllers
                 .Subscribe(_ =>
                 {
                     var result = _dealSystem.EvaluateSelected();
+                    _dealSystem.DiscardSelected();
                     _vm.PushHandResult(result);
                 })
                 .AddTo(_disposables);

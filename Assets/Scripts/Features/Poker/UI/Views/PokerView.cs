@@ -43,6 +43,7 @@ namespace FoldingFate.Features.Poker.UI.Views
             var token = destroyCancellationToken;
 
             _vm.Hand.Subscribe(RenderHand).AddTo(token);
+            _vm.SelectedIndices.Subscribe(UpdateSelectionVisuals).AddTo(token);
             _vm.HandResultText.Subscribe(text => _resultLabel.text = text).AddTo(token);
             _vm.DeckRemaining.Subscribe(count => _deckCountLabel.text = $"남은 카드: {count}").AddTo(token);
 
@@ -66,8 +67,6 @@ namespace FoldingFate.Features.Poker.UI.Views
                 _cardElements.Add(cardEl);
             }
 
-            // 선택 상태 구독 갱신
-            _vm.SelectedIndices.Subscribe(UpdateSelectionVisuals).AddTo(destroyCancellationToken);
         }
 
         private VisualElement CreateCardElement(BaseCard card, int index)
