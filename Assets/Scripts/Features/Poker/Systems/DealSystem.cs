@@ -28,6 +28,7 @@ namespace FoldingFate.Features.Poker.Systems
 
         public void ToggleSelect(int index)
         {
+            if (index < 0 || index >= _hand.Cards.Value.Count) return;
             bool isSelected = _hand.SelectedIndices.Value.Contains(index);
             if (!isSelected && _hand.SelectedCount >= 5) return;
             _hand.ToggleSelect(index);

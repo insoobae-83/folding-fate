@@ -91,6 +91,15 @@ namespace FoldingFate.Tests.EditMode.Poker
         }
 
         [Test]
+        public void ToggleSelect_IgnoresOutOfRangeIndex()
+        {
+            _system.Deal(3);
+            Assert.DoesNotThrow(() => _system.ToggleSelect(-1));
+            Assert.DoesNotThrow(() => _system.ToggleSelect(3));
+            Assert.AreEqual(0, _hand.SelectedCount);
+        }
+
+        [Test]
         public void EvaluateSelected_ReturnsPairForTwoSameRankCards()
         {
             var cards = new List<BaseCard>
