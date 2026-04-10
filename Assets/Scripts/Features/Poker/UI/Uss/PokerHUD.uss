@@ -10,8 +10,8 @@
 
 .deck-count-label {
     color: white;
-    font-size: 16px;
-    margin-bottom: 10px;
+    font-size: 14px;
+    margin-top: 4px;
 }
 
 .hand-container {
@@ -114,6 +114,33 @@
     opacity: 0.4;
 }
 
+/* === Deck Visual === */
+
+.deck-area {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    align-items: center;
+}
+
+.deck-stack {
+    width: 80px;
+    height: 120px;
+    background-color: rgb(40, 60, 120);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(60, 80, 150);
+}
+
+/* === Dealing Animation === */
+
+.card--dealing {
+    position: absolute;
+    transition-property: translate;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-out;
+}
+
 /* === Showcase 연출 === */
 
 .showcase-container {
@@ -193,6 +220,12 @@
 }
 
 .poker-root--showcasing .result-label {
+    opacity: 0.3;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.poker-root--showcasing .deck-area {
     opacity: 0.3;
     transition-property: opacity;
     transition-duration: 0.3s;
