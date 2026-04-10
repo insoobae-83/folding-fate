@@ -37,20 +37,16 @@ namespace FoldingFate.Features.Poker.UI.Views
             _submitButton = root.Q<Button>("submit-button");
             _drawButton = root.Q<Button>("draw-button");
 
-            _submitButton.clicked += () => _vm.SubmitCommand.Execute();
-            _drawButton.clicked += () => _vm.DrawCommand.Execute();
+            _submitButton.clicked += () => _vm.SubmitCommand.Execute(Unit.Default);
+            _drawButton.clicked += () => _vm.DrawCommand.Execute(Unit.Default);
 
-            var token = destroyCancellationToken;
+            _vm.Hand.Subscribe(RenderHand).AddTo(this);
+            _vm.SelectedIndices.Subscribe(UpdateSelectionVisuals).AddTo(this);
+            _vm.HandResultText.Subscribe(text => _resultLabel.text = text).AddTo(this);
+            _vm.DeckRemaining.Subscribe(count => _deckCountLabel.text = $"남은 카드: {count}").AddTo(this);
 
-            _vm.Hand.Subscribe(RenderHand).AddTo(token);
-            _vm.SelectedIndices.Subscribe(UpdateSelectionVisuals).AddTo(token);
-            _vm.HandResultText.Subscribe(text => _resultLabel.text = text).AddTo(token);
-            _vm.DeckRemaining.Subscribe(count => _deckCountLabel.text = $"남은 카드: {count}").AddTo(token);
-
-            _vm.SubmitCommand.CanExecute
-                .Subscribe(v => _submitButton.SetEnabled(v)).AddTo(token);
-            _vm.DrawCommand.CanExecute
-                .Subscribe(v => _drawButton.SetEnabled(v)).AddTo(token);
+            _vm.CanSubmit.Subscribe(v => _submitButton.SetEnabled(v)).AddTo(this);
+            _vm.CanDraw.Subscribe(v => _drawButton.SetEnabled(v)).AddTo(this);
         }
 
         private void RenderHand(IReadOnlyList<BaseCard> cards)

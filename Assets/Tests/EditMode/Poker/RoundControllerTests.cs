@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using R3;
 using FoldingFate.Core;
 using FoldingFate.Features.Card.Models;
 using FoldingFate.Features.Card.Systems;
@@ -58,8 +59,8 @@ namespace FoldingFate.Tests.EditMode.Poker
             _controller.Start();
             // Select 1 card and submit to get a result (at minimum HighCard)
             _vm.ToggleSelectCommand.Execute(0);
-            _vm.SubmitCommand.Execute();
-            Assert.IsFalse(string.IsNullOrEmpty(_vm.HandResultText.Value),
+            _vm.SubmitCommand.Execute(Unit.Default);
+            Assert.IsFalse(string.IsNullOrEmpty(_vm.HandResultText.CurrentValue),
                 "HandResultText should be set after submit");
         }
 
@@ -86,7 +87,7 @@ namespace FoldingFate.Tests.EditMode.Poker
             _hand.AddCards(partial);
             Assert.AreEqual(3, _hand.Cards.Value.Count);
 
-            _vm.DrawCommand.Execute();
+            _vm.DrawCommand.Execute(Unit.Default);
             Assert.AreEqual(8, _hand.Cards.Value.Count);
         }
     }

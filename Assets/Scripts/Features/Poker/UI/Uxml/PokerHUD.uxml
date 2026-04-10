@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements"
          xmlns:uie="UnityEditor.UIElements">
+    <ui:Style src="project://database/Assets/Scripts/Features/Poker/UI/Uss/PokerHUD.uss" />
     <ui:VisualElement name="poker-root" class="poker-root">
         <ui:Label name="deck-count-label" class="deck-count-label" text="남은 카드: 52" />
         <ui:VisualElement name="hand-container" class="hand-container" />

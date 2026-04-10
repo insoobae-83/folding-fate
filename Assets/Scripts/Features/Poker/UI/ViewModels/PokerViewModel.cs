@@ -17,6 +17,9 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
         public ReadOnlyReactiveProperty<int> DeckRemaining { get; }
         public ReadOnlyReactiveProperty<string> HandResultText { get; }
 
+        public ReadOnlyReactiveProperty<bool> CanSubmit { get; }
+        public ReadOnlyReactiveProperty<bool> CanDraw { get; }
+
         public ReactiveCommand<int> ToggleSelectCommand { get; }
         public ReactiveCommand SubmitCommand { get; }
         public ReactiveCommand DrawCommand { get; }
@@ -32,9 +35,11 @@ namespace FoldingFate.Features.Poker.UI.ViewModels
             ToggleSelectCommand = new ReactiveCommand<int>().AddTo(_disposables);
 
             var canSubmit = hand.SelectedIndices.Select(indices => indices.Count >= 1 && indices.Count <= 5);
+            CanSubmit = canSubmit.ToReadOnlyReactiveProperty(initialValue: false).AddTo(_disposables);
             SubmitCommand = new ReactiveCommand(canSubmit, initialCanExecute: false).AddTo(_disposables);
 
             var canDraw = hand.Cards.Select(cards => cards.Count < hand.MaxHandSize);
+            CanDraw = canDraw.ToReadOnlyReactiveProperty(initialValue: true).AddTo(_disposables);
             DrawCommand = new ReactiveCommand(canDraw, initialCanExecute: true).AddTo(_disposables);
         }
 

@@ -14,7 +14,7 @@ namespace FoldingFate.Features.Poker
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<DeckModel>(Lifetime.Singleton);
-            builder.Register<HandModel>(Lifetime.Singleton);
+            builder.Register<HandModel>(_ => new HandModel(8), Lifetime.Singleton);
             builder.Register<HandEvaluator>(Lifetime.Singleton);
             builder.Register<DealSystem>(Lifetime.Singleton);
             builder.Register<PokerViewModel>(Lifetime.Singleton);
