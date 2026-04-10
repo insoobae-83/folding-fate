@@ -30,6 +30,7 @@
     padding: 6px;
     align-items: center;
     position: relative;
+    overflow: visible;
     transition-duration: 0.15s;
     transition-property: translate;
 }
@@ -75,19 +76,18 @@
 
 .card-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 8px;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 10px;
     border-width: 3px;
-    border-color: transparent;
+    border-color: rgb(60, 130, 255);
     display: none;
 }
 
 .card-overlay--selected {
     display: flex;
-    border-color: rgb(60, 130, 255);
 }
 
 .result-label {
@@ -147,6 +147,7 @@
     padding: 6px;
     align-items: center;
     position: relative;
+    overflow: visible;
 }
 
 .showcase-card--dimmed {
@@ -163,11 +164,11 @@
 
 .showcase-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 8px;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 10px;
     border-width: 3px;
     border-color: rgb(218, 165, 32);
 }
