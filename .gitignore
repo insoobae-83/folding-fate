@@ -37,6 +37,9 @@
 # VS Code
 .vscode/
 
+# Git worktrees
+.worktrees/
+
 # Visual Studio / Rider solution files
 *.slnx
 
