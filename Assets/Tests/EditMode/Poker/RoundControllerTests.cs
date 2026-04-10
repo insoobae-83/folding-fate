@@ -110,5 +110,76 @@ namespace FoldingFate.Tests.EditMode.Poker
             Assert.IsTrue(string.IsNullOrEmpty(_vm.HandResultText.CurrentValue),
                 "DiscardCommand는 족보 결과를 설정하면 안 됨");
         }
+
+        [Test]
+        public void Showcase_InitiallyInactive()
+        {
+            Assert.IsFalse(_vm.Showcase.CurrentValue.IsActive);
+        }
+
+        [Test]
+        public void BeginShowcase_SetsShowcaseActive()
+        {
+            var cards = new List<BaseCard>
+            {
+                new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
+            };
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+
+            _vm.BeginShowcase(result);
+
+            Assert.IsTrue(_vm.Showcase.CurrentValue.IsActive);
+            Assert.AreEqual(1, _vm.Showcase.CurrentValue.Cards.Count);
+            Assert.AreEqual("하이 카드", _vm.Showcase.CurrentValue.RankText);
+        }
+
+        [Test]
+        public void EndShowcase_SetsShowcaseInactive()
+        {
+            var cards = new List<BaseCard>
+            {
+                new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
+            };
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+
+            _vm.BeginShowcase(result);
+            _vm.EndShowcase();
+
+            Assert.IsFalse(_vm.Showcase.CurrentValue.IsActive);
+        }
+
+        [Test]
+        public void CanSubmit_FalseDuringShowcase()
+        {
+            _controller.Start();
+            _vm.ToggleSelectCommand.Execute(0);
+            Assert.IsTrue(_vm.CanSubmit.CurrentValue, "선택 후 제출 가능해야 함");
+
+            var cards = new List<BaseCard>
+            {
+                new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
+            };
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+            _vm.BeginShowcase(result);
+
+            Assert.IsFalse(_vm.CanSubmit.CurrentValue, "연출 중 제출 불가해야 함");
+        }
+
+        [Test]
+        public void CanDraw_FalseDuringShowcase()
+        {
+            _controller.Start();
+            _hand.Clear();
+            Assert.IsTrue(_vm.CanDraw.CurrentValue, "핸드 비었을 때 드로우 가능해야 함");
+
+            var cards = new List<BaseCard>
+            {
+                new("s1", CardCategory.Standard, Suit.Spade, Rank.Ace, "", ""),
+            };
+            var result = new HandResult(HandRank.HighCard, cards, new List<int> { 14 });
+            _vm.BeginShowcase(result);
+
+            Assert.IsFalse(_vm.CanDraw.CurrentValue, "연출 중 드로우 불가해야 함");
+        }
     }
 }
