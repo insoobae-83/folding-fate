@@ -25,7 +25,7 @@ namespace FoldingFate.Features.Poker.Controllers
         public void Start()
         {
             _dealSystem.InitializeDeck();
-            _dealSystem.DrawToFull();
+            DealToFullAsync().Forget();
 
             _vm.ToggleSelectCommand
                 .Subscribe(index => _dealSystem.ToggleSelect(index))
@@ -44,16 +44,37 @@ namespace FoldingFate.Features.Poker.Controllers
                     _vm.EndShowcase();
                     _dealSystem.DiscardSelected();
                     _vm.PushHandResult(result);
+
+                    await DealToFullAsync(ct);
                 }, AwaitOperation.Drop)
                 .AddTo(_disposables);
 
-            _vm.DrawCommand
-                .Subscribe(_ => _dealSystem.DrawToFull())
-                .AddTo(_disposables);
-
             _vm.DiscardCommand
-                .Subscribe(_ => _dealSystem.DiscardSelected())
+                .SubscribeAwait(async (_, ct) =>
+                {
+                    _dealSystem.DiscardSelected();
+                    await DealToFullAsync(ct);
+                }, AwaitOperation.Drop)
                 .AddTo(_disposables);
+        }
+
+        private async UniTask DealToFullAsync(System.Threading.CancellationToken ct = default)
+        {
+            int needed = _dealSystem.CardsNeeded();
+            if (needed <= 0) return;
+
+            _vm.BeginDealing();
+            for (int i = 0; i < needed; i++)
+            {
+                _dealSystem.DrawOne();
+                if (i < needed - 1)
+                {
+                    await UniTask.Delay(
+                        TimeSpan.FromSeconds(_config.DealIntervalSeconds),
+                        cancellationToken: ct);
+                }
+            }
+            _vm.EndDealing();
         }
 
         public void Dispose() => _disposables.Dispose();
