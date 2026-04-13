@@ -3,8 +3,10 @@ using Cysharp.Threading.Tasks;
 using R3;
 using VContainer.Unity;
 using FoldingFate.Features.Poker.Data;
+using FoldingFate.Features.Poker.Events;
 using FoldingFate.Features.Poker.Systems;
 using FoldingFate.Features.Poker.UI.ViewModels;
+using FoldingFate.Infrastructure.EventBus;
 
 namespace FoldingFate.Features.Poker.Controllers
 {
@@ -13,13 +15,15 @@ namespace FoldingFate.Features.Poker.Controllers
         private readonly DealSystem _dealSystem;
         private readonly PokerViewModel _vm;
         private readonly PokerConfig _config;
+        private readonly EventBus _eventBus;
         private readonly CompositeDisposable _disposables = new();
 
-        public RoundController(DealSystem dealSystem, PokerViewModel vm, PokerConfig config)
+        public RoundController(DealSystem dealSystem, PokerViewModel vm, PokerConfig config, EventBus eventBus)
         {
             _dealSystem = dealSystem;
             _vm = vm;
             _config = config;
+            _eventBus = eventBus;
         }
 
         public void Start()
@@ -35,6 +39,7 @@ namespace FoldingFate.Features.Poker.Controllers
                 .SubscribeAwait(async (_, ct) =>
                 {
                     var result = _dealSystem.EvaluateSelected();
+                    _eventBus.Publish(new HandSubmittedEvent(result));
                     _vm.BeginShowcase(result);
 
                     await UniTask.Delay(

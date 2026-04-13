@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e99bfde42b34f569dbbf73aba26b40, type: 3}
+  m_Name: Character_KitsuneYuna
+  m_EditorClassIdentifier: FoldingFate.Features::FoldingFate.Features.Battle.Data.BattleCharacterData
+  DisplayName: Kitsune Yuna
+  MaxHp: 110
+  Attack: 12
+  Defense: 7
+  Prefab: {fileID: 1697755371863476500, guid: 7f47355d17a03c84ab68cefe5874e1a9, type: 3}

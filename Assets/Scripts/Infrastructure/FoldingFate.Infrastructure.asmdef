@@ -1,12 +1,9 @@
 {
-    "name": "FoldingFate.Features",
-    "rootNamespace": "FoldingFate.Features",
+    "name": "FoldingFate.Infrastructure",
+    "rootNamespace": "FoldingFate.Infrastructure",
     "references": [
         "FoldingFate.Core",
-        "FoldingFate.Infrastructure",
-        "R3.Unity",
-        "VContainer",
-        "UniTask"
+        "R3.Unity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

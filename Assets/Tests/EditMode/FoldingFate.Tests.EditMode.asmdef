@@ -4,6 +4,7 @@
     "references": [
         "FoldingFate.Core",
         "FoldingFate.Features",
+        "FoldingFate.Infrastructure",
         "R3.Unity",
         "VContainer"
     ],
