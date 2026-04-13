@@ -8,7 +8,6 @@ using FoldingFate.Features.Poker.Models;
 using FoldingFate.Features.Poker.Systems;
 using FoldingFate.Features.Poker.UI.ViewModels;
 using FoldingFate.Features.Poker.UI.Views;
-using FoldingFate.Infrastructure.EventBus;
 
 namespace FoldingFate.Features.Poker
 {
@@ -18,7 +17,6 @@ namespace FoldingFate.Features.Poker
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.Register<EventBus>(Lifetime.Singleton);
             builder.RegisterInstance(_pokerConfig);
             builder.Register<DeckModel>(Lifetime.Singleton);
             builder.Register<HandModel>(_ => new HandModel(8), Lifetime.Singleton);

@@ -8,6 +8,7 @@ using VContainer.Unity;
 using FoldingFate.Core;
 using FoldingFate.Features.Battle.Components;
 using FoldingFate.Features.Battle.Data;
+using FoldingFate.Features.Battle.Events;
 using FoldingFate.Features.Battle.Models;
 using FoldingFate.Features.Battle.Systems;
 using FoldingFate.Features.Entity.Models;
@@ -26,6 +27,8 @@ namespace FoldingFate.Features.Battle.Controllers
         private readonly BattleEffectController _effectController;
         private readonly BattleCharacterData[] _characterDataList;
         private readonly BattleMonsterData _monsterData;
+        private readonly EntityView[] _allyViews;
+        private readonly EntityView _enemyView;
         private readonly CompositeDisposable _disposables = new();
 
         private BattleModel _battle;
@@ -40,7 +43,9 @@ namespace FoldingFate.Features.Battle.Controllers
             TurnSystem turnSystem,
             BattleEffectController effectController,
             BattleCharacterData[] characterDataList,
-            BattleMonsterData monsterData)
+            BattleMonsterData monsterData,
+            EntityView[] allyViews,
+            EntityView enemyView)
         {
             _eventBus = eventBus;
             _entityFactory = entityFactory;
@@ -49,14 +54,22 @@ namespace FoldingFate.Features.Battle.Controllers
             _effectController = effectController;
             _characterDataList = characterDataList;
             _monsterData = monsterData;
+            _allyViews = allyViews;
+            _enemyView = enemyView;
         }
 
         public void Start()
         {
+            Debug.Log("[BattleController] Start — initializing battle");
             InitializeBattle();
             _eventBus.Receive<HandSubmittedEvent>()
-                .Subscribe(e => OnHandSubmitted(e).Forget())
+                .Subscribe(e =>
+                {
+                    Debug.Log($"[BattleController] HandSubmittedEvent received — rank: {e.Result.Rank}");
+                    OnHandSubmitted(e).Forget();
+                })
                 .AddTo(_disposables);
+            Debug.Log("[BattleController] Subscribed to HandSubmittedEvent");
         }
 
         private void InitializeBattle()
@@ -69,6 +82,13 @@ namespace FoldingFate.Features.Battle.Controllers
                     $"ally_{i}", EntityType.Character, data.DisplayName,
                     data.MaxHp, data.Attack, data.Defense);
                 allies.Add(entity);
+
+                if (i < _allyViews.Length)
+                {
+                    _allyViews[i].Bind(entity);
+                    _effectController.RegisterEntityView(entity, _allyViews[i]);
+                    Debug.Log($"[BattleController] Bound {data.DisplayName} to {_allyViews[i].gameObject.name}");
+                }
             }
 
             var enemies = new List<FoldingFate.Core.Entity>();
@@ -77,17 +97,30 @@ namespace FoldingFate.Features.Battle.Controllers
                 _monsterData.MaxHp, _monsterData.Attack, _monsterData.Defense);
             enemies.Add(monsterEntity);
 
+            if (_enemyView != null)
+            {
+                _enemyView.Bind(monsterEntity);
+                _effectController.RegisterEntityView(monsterEntity, _enemyView);
+                Debug.Log($"[BattleController] Bound {_monsterData.DisplayName} to {_enemyView.gameObject.name}");
+            }
+
             _battle = _battleSystem.StartBattle(allies.AsReadOnly(), enemies.AsReadOnly());
             _isBattleActive = true;
+            Debug.Log($"[BattleController] Battle started — {allies.Count} allies vs {enemies.Count} enemies");
         }
 
         private async UniTask OnHandSubmitted(HandSubmittedEvent e)
         {
-            if (!_isBattleActive || _isProcessingTurn) return;
+            if (!_isBattleActive || _isProcessingTurn)
+            {
+                Debug.Log($"[BattleController] Skipping — active:{_isBattleActive}, processing:{_isProcessingTurn}");
+                return;
+            }
             _isProcessingTurn = true;
 
             try
             {
+                Debug.Log("[BattleController] === Player Turn Start ===");
                 // Player turn
                 _turnSystem.StartTurn(_battle);
 
@@ -102,9 +135,11 @@ namespace FoldingFate.Features.Battle.Controllers
                         playerActions.Add(new BattleAction(ally, BattleActionType.Attack, targetEnemy));
                 }
 
+                Debug.Log($"[BattleController] {playerActions.Count} player actions, executing turn");
                 _turnSystem.ExecuteTurn(_battle, playerActions.AsReadOnly());
 
                 var lastRecord = _battle.TurnHistory[_battle.TurnHistory.Count - 1];
+                Debug.Log($"[BattleController] Playing {lastRecord.Results.Count} effects");
                 await _effectController.PlayTurnEffects(lastRecord.Results);
 
                 _turnSystem.EndTurn(_battle);
@@ -113,6 +148,7 @@ namespace FoldingFate.Features.Battle.Controllers
                 {
                     await _effectController.PlayVictory(_battle.Allies);
                     EndBattle();
+                    _eventBus.Publish(new BattleTurnCompleteEvent(true));
                     return;
                 }
 
@@ -139,8 +175,11 @@ namespace FoldingFate.Features.Battle.Controllers
                 }
 
                 _turnSystem.EndTurn(_battle);
-                if (_battle.Phase.CurrentValue == BattlePhase.Defeat)
+                bool isOver = _battle.Phase.CurrentValue == BattlePhase.Defeat;
+                if (isOver)
                     EndBattle();
+
+                _eventBus.Publish(new BattleTurnCompleteEvent(isOver));
             }
             finally
             {

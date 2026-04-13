@@ -1,7 +1,9 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
 using VContainer.Unity;
+using FoldingFate.Features.Battle.Events;
 using FoldingFate.Features.Poker.Data;
 using FoldingFate.Features.Poker.Events;
 using FoldingFate.Features.Poker.Systems;
@@ -39,12 +41,12 @@ namespace FoldingFate.Features.Poker.Controllers
                 .SubscribeAwait(async (_, ct) =>
                 {
                     var result = _dealSystem.EvaluateSelected();
+                    UnityEngine.Debug.Log($"[RoundController] Publishing HandSubmittedEvent — rank: {result.Rank}");
                     _eventBus.Publish(new HandSubmittedEvent(result));
                     _vm.BeginShowcase(result);
 
-                    await UniTask.Delay(
-                        TimeSpan.FromSeconds(_config.ShowcaseDurationSeconds),
-                        cancellationToken: ct);
+                    // 전투 턴 완료를 기다림
+                    await WaitForBattleTurnComplete(ct);
 
                     _vm.EndShowcase();
                     _dealSystem.DiscardSelected();
@@ -63,7 +65,26 @@ namespace FoldingFate.Features.Poker.Controllers
                 .AddTo(_disposables);
         }
 
-        private async UniTask DealToFullAsync(System.Threading.CancellationToken ct = default)
+        private async UniTask WaitForBattleTurnComplete(CancellationToken ct)
+        {
+            var tcs = new UniTaskCompletionSource();
+            var sub = _eventBus.Receive<BattleTurnCompleteEvent>()
+                .Subscribe(_ => tcs.TrySetResult());
+
+            using (ct.Register(() => tcs.TrySetCanceled()))
+            {
+                try
+                {
+                    await tcs.Task;
+                }
+                finally
+                {
+                    sub.Dispose();
+                }
+            }
+        }
+
+        private async UniTask DealToFullAsync(CancellationToken ct = default)
         {
             int needed = _dealSystem.CardsNeeded();
             if (needed <= 0) return;
