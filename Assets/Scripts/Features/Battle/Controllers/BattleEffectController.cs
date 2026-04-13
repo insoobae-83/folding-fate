@@ -5,6 +5,7 @@ using UnityEngine;
 using FoldingFate.Core;
 using FoldingFate.Features.Battle.Components;
 using FoldingFate.Features.Battle.Models;
+using FoldingFate.Features.Battle.Systems;
 using FoldingFate.Features.Entity.Models;
 
 namespace FoldingFate.Features.Battle.Controllers
@@ -18,6 +19,12 @@ namespace FoldingFate.Features.Battle.Controllers
         [SerializeField] private float _delayBetweenActions = 0.3f;
 
         private readonly Dictionary<string, EntityView> _entityViews = new();
+        private ApplySystem _applySystem;
+
+        public void SetApplySystem(ApplySystem applySystem)
+        {
+            _applySystem = applySystem;
+        }
 
         public void RegisterEntityView(FoldingFate.Core.Entity entity, EntityView view)
         {
@@ -61,18 +68,25 @@ namespace FoldingFate.Features.Battle.Controllers
             var targetView = GetEntityView(result.Target);
             if (actorView == null || targetView == null) return;
 
+            // 1. 전진
             await actorView.MoveToward(targetView.transform.position, _moveDistance, _moveDuration);
+
+            // 2. 공격 애니메이션
             actorView.PlayAttack();
             await UniTask.Delay(TimeSpan.FromSeconds(_attackAnimDelay), cancellationToken: destroyCancellationToken);
 
+            // 3. 이 시점에서 데미지 적용 + HP바 업데이트
             if (result.ResultType == ActionResultType.Damage && result.Value > 0)
             {
+                _applySystem.ApplyResult(result);
                 targetView.PlayHit();
                 targetView.UpdateHpBar();
             }
 
+            // 4. 복귀
             await actorView.MoveBack(_moveDuration);
 
+            // 5. 사망 체크
             var targetHealth = result.Target.Get<Health>();
             if (targetHealth != null && targetHealth.IsDead)
             {

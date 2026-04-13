@@ -21,7 +21,7 @@ namespace FoldingFate.Features.Battle.Systems
                 ApplyResult(results[i]);
         }
 
-        private void ApplyResult(ActionResult result)
+        public void ApplyResult(ActionResult result)
         {
             switch (result.ResultType)
             {

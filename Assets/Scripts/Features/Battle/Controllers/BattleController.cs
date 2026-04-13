@@ -24,6 +24,8 @@ namespace FoldingFate.Features.Battle.Controllers
         private readonly EntityFactory _entityFactory;
         private readonly BattleSystem _battleSystem;
         private readonly TurnSystem _turnSystem;
+        private readonly ResolveSystem _resolveSystem;
+        private readonly ApplySystem _applySystem;
         private readonly BattleEffectController _effectController;
         private readonly BattleCharacterData[] _characterDataList;
         private readonly BattleMonsterData _monsterData;
@@ -41,6 +43,8 @@ namespace FoldingFate.Features.Battle.Controllers
             EntityFactory entityFactory,
             BattleSystem battleSystem,
             TurnSystem turnSystem,
+            ResolveSystem resolveSystem,
+            ApplySystem applySystem,
             BattleEffectController effectController,
             BattleCharacterData[] characterDataList,
             BattleMonsterData monsterData,
@@ -51,6 +55,8 @@ namespace FoldingFate.Features.Battle.Controllers
             _entityFactory = entityFactory;
             _battleSystem = battleSystem;
             _turnSystem = turnSystem;
+            _resolveSystem = resolveSystem;
+            _applySystem = applySystem;
             _effectController = effectController;
             _characterDataList = characterDataList;
             _monsterData = monsterData;
@@ -74,6 +80,8 @@ namespace FoldingFate.Features.Battle.Controllers
 
         private void InitializeBattle()
         {
+            _effectController.SetApplySystem(_applySystem);
+
             var allies = new List<FoldingFate.Core.Entity>();
             for (int i = 0; i < _characterDataList.Length; i++)
             {
@@ -135,12 +143,19 @@ namespace FoldingFate.Features.Battle.Controllers
                         playerActions.Add(new BattleAction(ally, BattleActionType.Attack, targetEnemy));
                 }
 
-                Debug.Log($"[BattleController] {playerActions.Count} player actions, executing turn");
-                _turnSystem.ExecuteTurn(_battle, playerActions.AsReadOnly());
+                Debug.Log($"[BattleController] {playerActions.Count} player actions, resolving");
+                // Resolve만 수행 (Apply는 연출 중 개별 적용)
+                var playerResults = _resolveSystem.Resolve(playerActions.AsReadOnly());
+                _battle.TurnHistory.Add(new TurnRecord(
+                    _battle.TurnCount.CurrentValue, playerActions.AsReadOnly(), playerResults));
 
-                var lastRecord = _battle.TurnHistory[_battle.TurnHistory.Count - 1];
-                Debug.Log($"[BattleController] Playing {lastRecord.Results.Count} effects");
-                await _effectController.PlayTurnEffects(lastRecord.Results);
+                for (int j = 0; j < playerResults.Count; j++)
+                {
+                    var r = playerResults[j];
+                    Debug.Log($"[BattleController] {r.Source.Actor.DisplayName} → {r.Target.DisplayName}: {r.ResultType} {r.Value}");
+                }
+                // 연출 + 개별 Apply
+                await _effectController.PlayTurnEffects(playerResults);
 
                 _turnSystem.EndTurn(_battle);
 
@@ -169,9 +184,10 @@ namespace FoldingFate.Features.Battle.Controllers
 
                 if (enemyActions.Count > 0)
                 {
-                    _turnSystem.ExecuteTurn(_battle, enemyActions.AsReadOnly());
-                    var enemyRecord = _battle.TurnHistory[_battle.TurnHistory.Count - 1];
-                    await _effectController.PlayTurnEffects(enemyRecord.Results);
+                    var enemyResults = _resolveSystem.Resolve(enemyActions.AsReadOnly());
+                    _battle.TurnHistory.Add(new TurnRecord(
+                        _battle.TurnCount.CurrentValue, enemyActions.AsReadOnly(), enemyResults));
+                    await _effectController.PlayTurnEffects(enemyResults);
                 }
 
                 _turnSystem.EndTurn(_battle);
