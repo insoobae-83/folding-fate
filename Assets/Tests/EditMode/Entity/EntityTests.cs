@@ -90,9 +90,11 @@ namespace FoldingFate.Tests.EditMode.Entity
         [Test]
         public void Add_OverwritesPreviousComponent()
         {
-            _entity.Add(new DummyComponent { Value = 1 });
+            var oldComp = new DummyComponent { Value = 1 };
+            _entity.Add(oldComp);
             _entity.Add(new DummyComponent { Value = 2 });
             Assert.AreEqual(2, _entity.Get<DummyComponent>().Value);
+            Assert.IsNull(oldComp.Owner);
         }
 
         [Test]
@@ -102,6 +104,17 @@ namespace FoldingFate.Tests.EditMode.Entity
             _entity.Add(new AnotherDummyComponent());
             Assert.IsTrue(_entity.Has<DummyComponent>());
             Assert.IsTrue(_entity.Has<AnotherDummyComponent>());
+        }
+        [Test]
+        public void Constructor_ThrowsOnNullId()
+        {
+            Assert.Throws<System.ArgumentNullException>(() => new Core.Entity(null, EntityType.Character, "Name"));
+        }
+
+        [Test]
+        public void Constructor_ThrowsOnNullDisplayName()
+        {
+            Assert.Throws<System.ArgumentNullException>(() => new Core.Entity("id", EntityType.Character, null));
         }
     }
 }

@@ -19,6 +19,9 @@ namespace FoldingFate.Core
 
         public void Add<T>(T component) where T : class, IEntityComponent
         {
+            if (_components.TryGetValue(typeof(T), out var existing))
+                existing.Owner = null;
+
             _components[typeof(T)] = component;
             component.Owner = this;
         }
