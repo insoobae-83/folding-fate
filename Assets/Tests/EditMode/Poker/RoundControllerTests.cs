@@ -10,6 +10,7 @@ using FoldingFate.Features.Poker.Data;
 using FoldingFate.Features.Poker.Models;
 using FoldingFate.Features.Poker.Systems;
 using FoldingFate.Features.Poker.UI.ViewModels;
+using FoldingFate.Infrastructure.EventBus;
 
 namespace FoldingFate.Tests.EditMode.Poker
 {
@@ -22,6 +23,7 @@ namespace FoldingFate.Tests.EditMode.Poker
         private PokerViewModel _vm;
         private RoundController _controller;
         private PokerConfig _config;
+        private EventBus _eventBus;
 
         [SetUp]
         public void SetUp()
@@ -32,13 +34,15 @@ namespace FoldingFate.Tests.EditMode.Poker
             _vm = new PokerViewModel(_hand, _deck);
             _config = ScriptableObject.CreateInstance<PokerConfig>();
             _config.ShowcaseDurationSeconds = 0f;
-            _controller = new RoundController(_dealSystem, _vm, _config);
+            _eventBus = new EventBus();
+            _controller = new RoundController(_dealSystem, _vm, _config, _eventBus);
         }
 
         [TearDown]
         public void TearDown()
         {
             _controller.Dispose();
+            _eventBus.Dispose();
             Object.DestroyImmediate(_config);
             _vm.Dispose();
             _hand.Dispose();
